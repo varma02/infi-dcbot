@@ -11,16 +11,10 @@ export class CustomClient extends Client {
 		this.once(Events.ClientReady, () => console.log(`Logged in as ${this.user!.tag}`));
 		
 		this.commands = new Collection();
-		const commandsDir = __dirname.replace("lib", "") + "commands/";
-		for (const filename of new Glob("*.ts").scanSync({ cwd: commandsDir, onlyFiles: true, followSymlinks: false })) {
-			const command:Command = require(commandsDir + filename);
-			if ('data' in command && 'execute' in command) {
-				this.commands.set(command.data.name, command);
-			} else {
-				console.warn(`Failed to load command from ${filename}`);
-			}
+		this.reloadCommands();
+		if (process.env.REGISTER_COMMANDS_AT_STARTUP) {
+			this.registerCommands();
 		}
-		console.log("Loaded slash commands");
 
 		this.on(Events.InteractionCreate, async (interaction) => {
 			if (interaction.isCommand()) {
@@ -46,5 +40,35 @@ export class CustomClient extends Client {
 				if (member.dmChannel) member.dmChannel.send("hihi");
 			}
 		});
+	}
+
+	reloadCommands() {
+		this.commands = new Collection();
+		const commandsDir = __dirname.replace("lib", "") + "commands/";
+		for (const filename of new Glob("*.ts").scanSync({ cwd: commandsDir, onlyFiles: true, followSymlinks: false })) {
+			const command:Command = require(commandsDir + filename);
+			if ('data' in command && 'execute' in command) {
+				this.commands.set(command.data.name, command);
+			} else {
+				console.warn(`Failed to load command from ${filename}`);
+			}
+		}
+		console.log("Loaded slash commands");
+	}
+
+	registerCommands() {
+		if (process.env.GUILD_ID) {
+			const guild = this.guilds.resolve(process.env.GUILD_ID)
+			if (guild) {
+				guild.commands.set([...this.commands.values()].map((command) => command.data))
+				console.log("Registering slash commands to guild");
+				return;
+			}
+		} else if (this.application) {
+			this.application.commands.set([...this.commands.values()].map((command) => command.data))
+			console.log("Registering slash commands to application");
+			return;
+		}
+		console.log("Unable to register slash commands");
 	}
 }
