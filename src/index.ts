@@ -5,13 +5,14 @@ import { createClient } from 'redis';
 const db = createClient();
 try {
 	await db.connect();
+	console.log("Redis is ready");
 } catch {
 	console.error("Unable to connect to redis database!");
 	process.exit(1);
 }
 
 const client = new CustomClient({
-	intents: [Intent.Guilds],
+	intents: [Intent.Guilds, Intent.GuildMembers],
 	database: db,
 });
 
