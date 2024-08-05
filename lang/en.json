@@ -1,0 +1,6 @@
+{
+	"commandUnexpectedFail": "An unexpected error has occured",
+	"commandNotFound": "Command not found",
+	"welcomeMessageUpdateSuccess":"Successfuly updated welcome message",
+	"welcomeMessageUpdateFail": "Failed to update welcome message"
+}
