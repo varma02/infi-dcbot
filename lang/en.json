@@ -2,5 +2,12 @@
 	"commandUnexpectedFail": "An unexpected error has occured",
 	"commandNotFound": "Command not found",
 	"welcomeMessageUpdateSuccess":"Successfuly updated welcome message",
-	"welcomeMessageUpdateFail": "Failed to update welcome message"
+	"welcomeMessageUpdateFail": "Failed to update welcome message",
+	"roleselectorNewSuccess": "Roleselect message created successfuly",
+	"roleselectorNewFail": "Failed to create roleselect message",
+	"roleselectorMessageUpdate": "Role selector message has been updated",
+	"roleselectorMessageDelete": "Role selector message deleted successfuly",
+	"roleselectorEmojiOrTextRequired": "You have to set an emoji or text for the button",
+	"roleselectorUserRolesUpdated": "You are now {role}",
+	"messageNotFound": "Message does not exist"
 }

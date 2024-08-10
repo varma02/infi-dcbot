@@ -16,7 +16,7 @@ export class CustomClient extends Client {
 
 		this.once(Events.ClientReady, () => {
 			console.log(`Logged in as ${this.user!.tag}`)
-			if (process.env.REGISTER_COMMANDS_AT_STARTUP) {
+			if (process.env.REGISTER_COMMANDS_AT_STARTUP == "1") {
 				this.registerCommands();
 			}
 		});
@@ -37,6 +37,16 @@ export class CustomClient extends Client {
 				} else {
 					interaction.reply({embeds: [new EmbedBuilder().setDescription(this.lang.commandNotFound).setColor("Red")]});
 					console.warn(`Unable to find command: ${interaction.commandName}`);
+				}
+			} else if (interaction.isMessageComponent()) {
+				if (interaction.customId.startsWith("roleselect-") && await this.db.get(`roleselect-messages:${interaction.guildId}:${interaction.channelId}:${interaction.message.id}`)) {
+					try {
+						await interaction.guild?.members.resolve(interaction.user.id)?.roles.add(interaction.customId.split("-")[1]),
+						await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(this.lang.roleselectorUserRolesUpdated.replace("{role}", `<@&${interaction.customId.split("-")[1]}>`))], ephemeral: true});
+					} catch (err) {
+						if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(this.lang.commandUnexpectedFail)], ephemeral: true});
+						console.warn(err);
+					}
 				}
 			}
 		});

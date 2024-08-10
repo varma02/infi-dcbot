@@ -1,10 +1,11 @@
-import { ActionRowBuilder, EmbedBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import type { Command } from "../lib/Command";
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName("welcomemsg")
-		.setDescription("Set the welcome message sent to new members"),
+		.setDescription("Set the welcome message sent to new members")
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction, lang, db) {
 		const modal = new ModalBuilder()
 			.setCustomId("welcomemsg-modal")
