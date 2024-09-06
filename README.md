@@ -2,7 +2,7 @@
 
 ## todo
 - Üdvözlő üzenet (már van discordban) ✅
-- Rang választó (már van discordban)
+- Rang választó (már van discordban) ⏸
 - Sorsolás 
 - Káromkodás szűrés (már van discordban) ❌
 - Ticket rendszer (pl hibabejelentések, stb)

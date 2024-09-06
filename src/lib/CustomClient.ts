@@ -1,17 +1,14 @@
 import type { RedisClientType } from "@redis/client";
-import { Client, Collection, EmbedBuilder, Events, type ClientOptions } from "discord.js";
+import { Client, Collection, EmbedBuilder, Events, TextChannel, type ClientOptions } from "discord.js";
 import type { Command } from "./Command";
 import { Glob } from "bun";
-import type { LanguagePack } from "./LanguagePack";
 
 export class CustomClient extends Client {
 	commands: Collection<string, Command>;
-	lang: LanguagePack;
 	db: RedisClientType<any, any, any>;
 
-	constructor(options: ClientOptions & {database: RedisClientType<any, any, any>, language: LanguagePack}) {
+	constructor(options: ClientOptions & {database: RedisClientType<any, any, any>}) {
 		super(options)
-		this.lang = options.language
 		this.db = options.database
 
 		this.once(Events.ClientReady, () => {
@@ -29,33 +26,37 @@ export class CustomClient extends Client {
 				const command = this.commands.get(interaction.commandName);
 				if (command) {
 					try {
-						await command.execute(interaction, this.lang, this.db);
+						await command.execute(interaction, this.db);
 					} catch (err) {
-						if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setDescription(this.lang.commandUnexpectedFail).setColor("Red")]});
+						if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setDescription("Váratlan hiba történt").setColor("Red")]});
 						console.warn(`Command \`${interaction.commandName}\` returned with an error`, err);
 					}
 				} else {
-					interaction.reply({embeds: [new EmbedBuilder().setDescription(this.lang.commandNotFound).setColor("Red")]});
+					interaction.reply({embeds: [new EmbedBuilder().setDescription("Nincs ilyen parancs").setColor("Red")]});
 					console.warn(`Unable to find command: ${interaction.commandName}`);
 				}
-			} else if (interaction.isMessageComponent()) {
-				if (interaction.customId.startsWith("roleselect-") && await this.db.get(`roleselect-messages:${interaction.guildId}:${interaction.channelId}:${interaction.message.id}`)) {
-					try {
-						await interaction.guild?.members.resolve(interaction.user.id)?.roles.add(interaction.customId.split("-")[1]),
-						await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(this.lang.roleselectorUserRolesUpdated.replace("{role}", `<@&${interaction.customId.split("-")[1]}>`))], ephemeral: true});
-					} catch (err) {
-						if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(this.lang.commandUnexpectedFail)], ephemeral: true});
-						console.warn(err);
-					}
-				}
 			}
+			// else if (interaction.isMessageComponent()) {
+			// 	if (interaction.customId.startsWith("roleselect-") && await this.db.get(`roleselect-messages:${interaction.guildId}:${interaction.channelId}:${interaction.message.id}`)) {
+			// 		try {
+			// 			await interaction.guild?.members.resolve(interaction.user.id)?.roles.add(interaction.customId.split("-")[1]),
+			// 			await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(`a`)], ephemeral: true});
+			// 		} catch (err) {
+			// 			if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription("Váratlan hiba történt")], ephemeral: true});
+			// 			console.warn(err);
+			// 		}
+			// 	} else if (interaction.customId === "lottery-register") {
+			// 		await this.db.sAdd(`lottery-users:${interaction.guildId}:${interaction.channelId}:${interaction.message.id}`, interaction.user.id);
+			// 		await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription("Sikeresen bejelentkeztél a sorsolásra")], ephemeral:true});
+			// 	}
+			// }
 		});
 
 		this.on(Events.GuildMemberAdd, async (member) => {
-			const welcomemsg = await this.db.get("welcome-message")
+			const welcomemsg = await this.db.get(`welcome-message:${member.guild.id}`);
 			if (!member.user.bot && welcomemsg) {
 				if (!member.dmChannel) await member.createDM();
-				if (member.dmChannel) member.dmChannel.send(welcomemsg.replace("<@user>", `<@${member.id}>`))
+				if (member.dmChannel) member.dmChannel.send(welcomemsg);
 				// if (member.dmChannel) member.dmChannel.send({embeds:[new EmbedBuilder()
 				// 	.setTitle("Welcome to X server")
 				// 	.setDescription("I hope you have a great time here. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sit pariatur consequatur nihil, at dolor harum modi cum similique iusto voluptatibus ut natus eaque ad beatae blanditiis excepturi omnis velit. Recusandae quo ipsa corporis, quos quasi, eius eligendi sit vero illo molestias ducimus voluptate qui. Dolor blanditiis culpa, aliquid, praesentium facilis enim quo numquam, labore iusto atque ipsa rem doloremque odit id consequatur excepturi quis. Ducimus reiciendis necessitatibus error ipsam fugiat cumque repudiandae sint reprehenderit, libero omnis natus quasi modi porro, saepe adipisci officiis magnam! Veniam quia minima asperiores dolores deserunt assumenda quaerat quas, dolore, aspernatur ducimus, consectetur aperiam! Assumenda, inventore?")

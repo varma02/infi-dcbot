@@ -102,7 +102,7 @@ export default {
 				.setRequired(true)
 			)
 		),
-	async execute(interaction, lang, db) {
+	async execute(interaction, db) {
 		const options = interaction.options as CommandInteractionOptionResolver;
 		if (options.getSubcommand() === "new") {
 			const channel = options.getChannel("channel", true, [ChannelType.GuildText]);
@@ -124,9 +124,9 @@ export default {
 			try {
 				const message = await channel.send(response.fields.getTextInputValue("roleselect-message"));
 				await db.set(`roleselect-messages:${message.guildId}:${message.channelId}:${message.id}`, 1);
-				await response.reply({embeds:[new EmbedBuilder().setDescription(lang.roleselectorNewSuccess).setColor("Blue")]});
-			} catch (err) {
-				await response.reply({embeds:[new EmbedBuilder().setDescription(lang.roleselectorNewFail).setColor("Red")]});
+				await response.reply({embeds:[new EmbedBuilder().setDescription("Rang választó sikeresen létrehozva").setColor("Blue")]});
+			} catch (err) { 
+				await response.reply({embeds:[new EmbedBuilder().setDescription("Nem sikerült létrehozni a rang választót").setColor("Red")]});
 				console.warn("Failed to create role selector", err);
 			}
 		} else if (options.getSubcommand() === "edit_message") {
@@ -151,9 +151,9 @@ export default {
 				const message = channel.messages.resolve(msgid)
 				if (message) {
 					await message.edit(response.fields.getTextInputValue("roleselect-message"));
-					await response.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription(lang.roleselectorMessageUpdate)]});
+					await response.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription("Rang választó frissítve")]});
 				} else {
-					await response.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.messageNotFound)]});
+					await response.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("A megadott üzenet nem található")]});
 					await db.del(`roleselect-messages:${channel.guildId}:${channel.id}:${msgid}`);
 				}
 			}
@@ -163,21 +163,18 @@ export default {
 			const message = channel.messages.resolve(msgid);
 			if (message) {
 				await message.delete()
-				await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription(lang.roleselectorMessageDelete)]});
+				await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription("Rang választó törölve")]});
 			} else {
-				await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.messageNotFound)]});
+				await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("A megadott üzenet nem található")]});
 			}
 			await db.del(`roleselect-messages:${channel.guildId}:${channel.id}:${msgid}`);
 		} else if (options.getSubcommand() === "add_role") {
 			const channel = options.getChannel("channel", true, [ChannelType.GuildText]);
 			const msgid = options.getString("id", true);
 			const role = options.getRole("role", true);
-			const btntext = options.getString("btn_text", false);
+			let btntext = options.getString("btn_text", false);
 			const emoji = options.getString("emoji", false);
-			if (!(btntext || emoji)) {
-				await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.roleselectorEmojiOrTextRequired)]});
-				return;
-			}
+			if (!(btntext || emoji)) btntext = role.name
 			if (await db.get(`roleselect-messages:${channel.guildId}:${channel.id}:${msgid}`)) {
 				const message = await channel.messages.fetch(msgid);
 				if (message) {
@@ -194,13 +191,13 @@ export default {
 						.setComponents(msgcomponents[0] ? msgcomponents[0].components.map(v => new ButtonBuilder(v.data as any)) : [])
 						.addComponents(btn)
 					]});
-					await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription(lang.roleselectorMessageUpdate)]});
+					await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription("Rang választó frissítve")]});
 				} else {
-					await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.messageNotFound)]});
+					await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("A megadott üzenet nem található")]});
 					await db.del(`roleselect-messages:${channel.guildId}:${channel.id}:${msgid}`);
 				}
 			} else {
-				await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.messageNotFound)]});
+				await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("A megadott üzenet nem található")]});
 			}
 		} else if (options.getSubcommand() === "remove_role") {
 			const channel = options.getChannel("channel", true, [ChannelType.GuildText]);
@@ -219,9 +216,9 @@ export default {
 							.filter(v => v.customId != `roleselect-${role.id}`)
 							.map(v => new ButtonBuilder(v.data as any)))
 					] : []});
-					await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription(lang.roleselectorMessageUpdate)]});
-				} else await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.messageNotFound)]});
-			} else await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription(lang.messageNotFound)]});
+					await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription("Rang választó frissítve")]});
+				} else await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("A megadott üzenet nem található")]});
+			} else await interaction.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("A megadott üzenet nem található")]});
 		}
 	},
 } as Command
