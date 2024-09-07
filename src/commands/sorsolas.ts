@@ -1,10 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, EmbedBuilder, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType, SlashCommandIntegerOption, type GuildTextBasedChannel, PermissionFlagsBits } from "discord.js";
 import type { Command } from "../lib/Command";
 
 export default {
 	data: new SlashCommandBuilder()
 	.setName("sorsolás")
 	.setDescription("Sorsolások kezelése, szerkesztése, lezárása")
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 	.addSubcommand(
 		new SlashCommandSubcommandBuilder()
 		.setName("új")
@@ -12,11 +13,22 @@ export default {
 		.addChannelOption(
 			new SlashCommandChannelOption()
 			.setName("szöveges_csatorna")
-			// .setDescription("Szöveges csatorna")
+			.setDescription("A szöveges csatorna 🤯")
 			.addChannelTypes(ChannelType.GuildText)
 			.setRequired(true)
 		)
+	).addSubcommand(
+		new SlashCommandSubcommandBuilder()
+		.setName("lezárás")
+		.setDescription("Meglévő sorsolás lezárása")
+		.addIntegerOption(
+			new SlashCommandIntegerOption()
+			.setName("sorsolás_id")
+			.setDescription("A sorsolás azonosítója")
+			.setRequired(true)
+		)
 	),
+
 	async execute(interaction, db) {
 		const options = interaction.options as CommandInteractionOptionResolver;
 		switch (options.getSubcommand()) {
@@ -98,23 +110,36 @@ export default {
 					],
 				});
 
-				const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 1200000 });
+				const collector = message.createMessageComponentCollector({ 
+					componentType: ComponentType.Button, time: 1200000,
+					filter: (i) => i.user.id == interaction.user.id
+				});
+				
 				collector.on('collect', async (i) => {
-					if (i.user.id !== interaction.user.id) return;
 					switch (i.customId) {
 						case "sorsolas-new-test-btn":
 							i.reply({ content: "😎 Beléptél a sorsolásba", ephemeral: true });
 						break;
 						case "sorsolas-new-send":
-							const sorsolas_id = Date.now();
-							await db.lPush("sorsolasok", `${interaction.guildId}:${sorsolas_id}:${time}`);
-							channel.send({ 
-								content: text, 
+							const msg = await channel.send("Betöltés...");
+							const start_time = Date.now();
+							if (!interaction.guildId) {
+								interaction.reply("Váratlan hiba lépet fel: NO_GUILD_ID");
+								msg.delete();
+								return;
+							}
+							await db.hSet(`sorsolasok:${interaction.guildId}:${start_time}`, {'guildId': interaction.guildId!, 'channelId': channel.id, 'messageId': msg.id, 'time': time});
+							await db.sAdd("sorsolasok", `${interaction.guildId}:${start_time}:${time}`);
+							msg.edit({
+								content: text+`\n||*\`ID:${sorsolas_id}\`*||`,
 								components: [
 									new ActionRowBuilder<MessageActionRowComponentBuilder>()
 									.addComponents(
 										new ButtonBuilder()
-										.setCustomId(`sorsolas-${interaction.guildId}-${sorsolas_id}`)
+										.setCustomId(`sorsolas-register-${start_time}`)
+										.setStyle(ButtonStyle.Primary)
+										.setEmoji("👍")
+										.setLabel("Feliratkozás"),
 									)
 								]
 							});
@@ -129,79 +154,24 @@ export default {
 					message.edit({ components: [] });
 				})
 			break;
+			case "lezárás":
+				const sorsolas_id = options.getInteger("sorsolás_id", true);
+				const sorsolas = await db.hGetAll(`sorsolasok:${interaction.guildId}:${sorsolas_id}`);
+				if (!sorsolas || !sorsolas.messageId) {
+					interaction.reply({ content: "❌ Nincs ilyen sorsolás", ephemeral: true });
+					return;
+				}
+				const winner = await db.sRandMember(`sorsolasok:${interaction.guildId}:${sorsolas_id}:participants`);
+				
+				const smsg = await (await interaction.guild?.channels.fetch(sorsolas.channelId) as GuildTextBasedChannel)?.messages.fetch(sorsolas.messageId);
+				smsg.edit({components: []});
+				smsg.reply(`A sorsolást <@${winner}> nyerte 🎉`);
+				
+				await db.sRem("sorsolasok", `${interaction.guildId}:${sorsolas_id}:${sorsolas.time}`);
+				await db.del([`sorsolasok:${interaction.guildId}:${sorsolas_id}`, `sorsolasok:${interaction.guildId}:${sorsolas_id}:participants`]);
+				
+				await interaction.reply({ content: `✅ A sorsolás lezárva\n**Nyertes:** <@${winner}>`, ephemeral: true });
+			break;
 		}
-
-		// if (options.getSubcommand() === "new") {
-		// 	await interaction.showModal(
-		// 		new ModalBuilder()
-		// 		.setCustomId("lottery-new-modal")
-		// 		.setTitle("Create new lottery")
-		// 		.addComponents(
-		// 			new ActionRowBuilder<ModalActionRowComponentBuilder>()
-		// 			.addComponents(
-		// 				new TextInputBuilder()
-		// 				.setCustomId("lottery-new-time")
-		// 				.setLabel("Time (in hours)")
-		// 				.setStyle(TextInputStyle.Short)
-		// 				.setRequired(true)
-		// 			),
-		// 			new ActionRowBuilder<ModalActionRowComponentBuilder>()
-		// 			.addComponents(
-		// 				new TextInputBuilder()
-		// 				.setCustomId("lottery-new-btnemoji")
-		// 				.setLabel("Button emoji")
-		// 				.setStyle(TextInputStyle.Short)
-		// 				.setRequired(true)
-		// 			),
-		// 			new ActionRowBuilder<ModalActionRowComponentBuilder>()
-		// 			.addComponents(
-		// 				new TextInputBuilder()
-		// 				.setCustomId("lottery-new-btntext")
-		// 				.setLabel("Button text")
-		// 				.setStyle(TextInputStyle.Short)
-		// 				.setRequired(false)
-		// 			),
-		// 			new ActionRowBuilder<ModalActionRowComponentBuilder>()
-		// 			.addComponents(
-		// 				new TextInputBuilder()
-		// 				.setCustomId("lottery-new-message")
-		// 				.setLabel("Message")
-		// 				.setStyle(TextInputStyle.Paragraph)
-		// 				.setRequired(true)
-		// 			)
-		// 		)
-		// 	);
-			
-		// 	const response = await interaction.awaitModalSubmit({
-		// 		time: 300000, filter: (i) => i.isModalSubmit() && i.customId == "lottery-new-modal" && i.user.id == interaction.user.id});
-			
-		// 	try {
-		// 		const time = parseFloat(response.fields.getTextInputValue("lottery-new-time"));
-		// 		const btnemoji = response.fields.getTextInputValue("lottery-new-btnemoji");
-		// 		const btntext = response.fields.getTextInputValue("lottery-new-btntext");
-		// 		const text = response.fields.getTextInputValue("lottery-new-message");
-		// 		const channel = options.getChannel("channel", true, [ChannelType.GuildText]);
-	
-		// 		try {
-		// 			const msg = await channel.send({content: text, components:[
-		// 				new ActionRowBuilder<MessageActionRowComponentBuilder>()
-		// 				.addComponents(
-		// 					new ButtonBuilder()
-		// 					.setCustomId("lottery-register")
-		// 					.setEmoji(btnemoji)
-		// 					.setLabel(btntext)
-		// 					.setStyle(ButtonStyle.Primary)
-		// 				)
-		// 			]});
-		// 			await db.sAdd("lotteries", `${msg.guildId}:${msg.channelId}:${msg.id}:${Date.now() + Math.floor(time * 3600000)}`);
-		// 		} catch (err) {
-		// 			console.warn(err);
-		// 			await response.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("Failed to send message.")]});
-		// 		}
-		// 	} catch (err) {
-		// 		console.warn(err);
-		// 		await response.reply({embeds:[new EmbedBuilder().setColor("Red").setDescription("Failed to parse inputs.")]});
-		// 	}
-		// }
 	},
 } as Command

@@ -19,8 +19,8 @@ const client = new CustomClient({
 for (const event of ["SIGINT", "SIGTERM", "SIGKILL"]) {
 	process.once(event, async () => {
 		console.warn("\nLogging out");
-		await db.quit();
 		await client.destroy();
+		await db.quit();
 	});
 }
 

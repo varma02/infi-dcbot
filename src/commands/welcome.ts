@@ -35,6 +35,7 @@ export default {
 		.setName("üdvözlő_üzenet")
 		.setDescription("Üdvözlő üzenet beállítása új tagoknak")
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		
 	async execute(interaction, db) {
 		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || "";
 		const message = await interaction.reply({
