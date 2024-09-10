@@ -29,8 +29,8 @@ export class CustomClient extends Client {
 				}
 			} else if (interaction.isButton()) {
 				if (interaction.customId.startsWith("sorsolas-register-")) {
-					await this.db.sAdd(`sorsolasok:${interaction.guildId}:${interaction.customId.split("-")[1]}:participants`, interaction.user.id);
-					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(`Jelentkezés bejegyzve 😎`)], ephemeral: true});
+					await this.db.sAdd(`sorsolasok:${interaction.guildId}:${interaction.customId.split("-")[2]}:participants`, interaction.user.id);
+					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(`😎 Beléptél a sorsolásba`)], ephemeral: true});
 				}
 			}
 			// else if (interaction.isMessageComponent()) {
@@ -55,17 +55,19 @@ export class CustomClient extends Client {
 				for (const sorsolas of sorsolasok) {
 					const ss = sorsolas.split(":");
 					if (parseInt(ss[1]) + parseFloat(ss[2]) * 60000 <= Date.now() ) {
-						const sorsolas_id = parseInt(ss[1]);
-						const guildId = parseInt(ss[0]);
+						const sorsolas_id = ss[1];
+						const guildId = ss[0];
+
 						const sorsolas = await this.db.hGetAll(`sorsolasok:${ss[0]}:${sorsolas_id}`);
 						if (!sorsolas || !sorsolas.messageId) continue;
+						
 						const winner = await this.db.sRandMember(`sorsolasok:${guildId}:${sorsolas_id}:participants`);
 						
 						const smsg = await (await this.channels.fetch(sorsolas.channelId) as GuildTextBasedChannel)?.messages.fetch(sorsolas.messageId);
 						smsg.edit({components: []});
 						smsg.reply(`A sorsolást <@${winner}> nyerte 🎉`);
-						
-						await this.db.sRem("sorsolasok", `${guildId}:${sorsolas_id}:${sorsolas.time}`);
+
+						await this.db.sRem("sorsolasok", `${guildId}:${sorsolas_id}:${ss[2]}`);
 						await this.db.del([`sorsolasok:${guildId}:${sorsolas_id}`, `sorsolasok:${guildId}:${sorsolas_id}:participants`]);
 					}
 				}

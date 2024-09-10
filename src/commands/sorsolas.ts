@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType, SlashCommandIntegerOption, type GuildTextBasedChannel, PermissionFlagsBits } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType, SlashCommandIntegerOption, type GuildTextBasedChannel, PermissionFlagsBits, InteractionCollector } from "discord.js";
 import type { Command } from "../lib/Command";
 
 export default {
@@ -109,16 +109,21 @@ export default {
 						),
 					],
 				});
-
-				const collector = message.createMessageComponentCollector({ 
-					componentType: ComponentType.Button, time: 1200000,
-					filter: (i) => i.user.id == interaction.user.id
+				
+				const collector = new InteractionCollector(interaction.client, {
+					componentType: ComponentType.Button, time: 1200000, 
+					filter: (i) => i.user.id == interaction.user.id && i.customId.startsWith("sorsolas-new-"),
 				});
+
+				// const collector = message.createMessageComponentCollector({ 
+				// 	componentType: ComponentType.Button, time: 1200000,
+				// 	filter: (i) => i.user.id == interaction.user.id,
+				// });
 				
 				collector.on('collect', async (i) => {
 					switch (i.customId) {
 						case "sorsolas-new-test-btn":
-							i.reply({ content: "😎 Beléptél a sorsolásba", ephemeral: true });
+							i.reply({ content: "😎 Beléptél a sorsolásba (teszt)", ephemeral: true });
 						break;
 						case "sorsolas-new-send":
 							const msg = await channel.send("Betöltés...");
@@ -131,28 +136,31 @@ export default {
 							await db.hSet(`sorsolasok:${interaction.guildId}:${start_time}`, {'guildId': interaction.guildId!, 'channelId': channel.id, 'messageId': msg.id, 'time': time});
 							await db.sAdd("sorsolasok", `${interaction.guildId}:${start_time}:${time}`);
 							msg.edit({
-								content: text+`\n||*\`ID:${sorsolas_id}\`*||`,
+								content: text+`\n||*\`ID:${start_time}\`*||`,
 								components: [
 									new ActionRowBuilder<MessageActionRowComponentBuilder>()
 									.addComponents(
 										new ButtonBuilder()
 										.setCustomId(`sorsolas-register-${start_time}`)
 										.setStyle(ButtonStyle.Primary)
-										.setEmoji("👍")
-										.setLabel("Feliratkozás"),
+										.setEmoji(btnemoji)
+										.setLabel(btntext),
 									)
 								]
 							});
+							if (i.replied) break;
 							i.reply({ content: "✅ A sorsolás elindult", ephemeral: true });
 						break;
 						case "sorsolas-new-discard":
+							if (i.replied) break;
+							collector.stop();
 							i.reply({ content: "❌ Sorsolás elvetve", ephemeral: true });
 						break;
 					}
 				});
 				collector.once('end', () => {
 					message.edit({ components: [] });
-				})
+				});
 			break;
 			case "lezárás":
 				const sorsolas_id = options.getInteger("sorsolás_id", true);
