@@ -37,7 +37,7 @@ export default {
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 		
 	async execute(interaction, db) {
-		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || "";
+		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || "❌ Nincs beállítva üdvözlő üzenet";
 		const message = await interaction.reply({
 			content:`**ÜDVÖZLŐ ÜZENET ELŐNÉZETE:**\n\n${welcometext}\n`,
 			components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
