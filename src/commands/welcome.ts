@@ -11,15 +11,16 @@ import {
 	type MessageActionRowComponentBuilder 
 } from "discord.js";
 import type { Command } from "../lib/Command";
+import lang from "../lang";
 
 function makeModal(prev: string): ModalBuilder {
 	const modal = new ModalBuilder()
 		.setCustomId("welcomemsg-modal")
-		.setTitle("Set welcome message");
+		.setTitle(lang.welcome_message_edit);
 
 	const textInput = new TextInputBuilder()
 		.setCustomId("welcomemsg-text")
-		.setLabel("You have 5 minutes")
+		.setLabel(lang.welcome_message_edit_label)
 		.setStyle(TextInputStyle.Paragraph)
 		.setValue(prev);
 
@@ -37,25 +38,25 @@ export default {
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 		
 	async execute(interaction, db) {
-		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || "❌ Nincs beállítva üdvözlő üzenet";
+		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || lang.welcome_message_not_found;
 		const message = await interaction.reply({
-			content:`**ÜDVÖZLŐ ÜZENET ELŐNÉZETE:**\n\n${welcometext}\n`,
+			content:lang.welcome_message_preview.replace("{1}", welcometext),
 			components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
 				new ButtonBuilder()
 					.setStyle(ButtonStyle.Primary)
 					.setCustomId("welcome-msg-save")
 					.setEmoji("💾")
-					.setLabel("Mentés"),
+					.setLabel(lang.welcome_message_save_btn),
 				new ButtonBuilder()
 					.setStyle(ButtonStyle.Secondary)
 					.setCustomId("welcome-msg-edit")
 					.setEmoji("✏️")
-					.setLabel("Szerkesztés"),
+					.setLabel(lang.welcome_message_edit_btn),
 					new ButtonBuilder()
 					.setStyle(ButtonStyle.Secondary)
 					.setCustomId("welcome-msg-remove")
 					.setEmoji("🗑")
-					.setLabel("Törlés"),
+					.setLabel(lang.welcome_message_remove_btn),
 				)],
 			ephemeral: true,
 		});
@@ -67,20 +68,20 @@ export default {
 			switch (i.customId) {
 				case "welcome-msg-save":
 					await db.set(`welcome-message:${interaction.guildId}`, welcometext);
-					i.reply({ content: "💾 Üzenet mentve", ephemeral: true });
+					i.reply({ content: lang.welcome_message_saved, ephemeral: true });
 				break;
 				case "welcome-msg-edit":
 					i.showModal(makeModal(welcometext));
 					const modal_response = await i.awaitModalSubmit({ time: 1200000, filter: (mi) => mi.customId == "welcomemsg-modal" && mi.user.id == interaction.user.id });
 					welcometext = modal_response.fields.getTextInputValue("welcomemsg-text").trim();
-					message.edit({ content: `**ÜDVÖZLŐ ÜZENET ELŐNÉZETE:**\n\n${welcometext}\n` });
-					modal_response.reply({ content: "🔄 Üzenet frissítve", ephemeral: true });
+					message.edit({ content: lang.welcome_message_preview.replace("{1}", welcometext) });
+					modal_response.reply({ content: lang.welcome_message_updated, ephemeral: true });
 				break;
 				case "welcome-msg-remove":
 					welcometext = "";
 					message.delete();
 					await db.set(`welcome-message:${interaction.guildId}`, "");
-					i.reply({ content: "🗑 Üdvözlő üzenet törölve", ephemeral: true });
+					i.reply({ content: lang.welcome_message_removed, ephemeral: true });
 				break;
 			}
 		});

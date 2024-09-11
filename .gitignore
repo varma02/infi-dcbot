@@ -178,3 +178,5 @@ dist
 .vscode
 .env
 dump.rdb
+
+*test*

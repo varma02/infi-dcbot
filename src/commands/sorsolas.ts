@@ -1,5 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType, SlashCommandIntegerOption, type GuildTextBasedChannel, PermissionFlagsBits, InteractionCollector } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType, SlashCommandIntegerOption, type GuildTextBasedChannel, PermissionFlagsBits, InteractionCollector, parseEmoji } from "discord.js";
 import type { Command } from "../lib/Command";
+import lang from "../lang";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -36,13 +37,13 @@ export default {
 				await interaction.showModal(
 					new ModalBuilder()
 					.setCustomId("sorsolas-new-modal")
-					.setTitle("Új sorsolás")
+					.setTitle(lang.sorsolas_new_modal_title)
 					.addComponents(
 						new ActionRowBuilder<ModalActionRowComponentBuilder>()
 						.addComponents(
 							new TextInputBuilder()
 							.setCustomId("sorsolas-new-time")
-							.setLabel("Időtartam (percben)")
+							.setLabel(lang.sorsolas_new_modal_time)
 							.setStyle(TextInputStyle.Short)
 							.setRequired(true)
 						),
@@ -50,7 +51,7 @@ export default {
 						.addComponents(
 							new TextInputBuilder()
 							.setCustomId("sorsolas-new-btnemoji")
-							.setLabel("Gomb emoji")
+							.setLabel(lang.sorsolas_new_modal_emoji)
 							.setStyle(TextInputStyle.Short)
 							.setRequired(true)
 						),
@@ -58,7 +59,7 @@ export default {
 						.addComponents(
 							new TextInputBuilder()
 							.setCustomId("sorsolas-new-btntext")
-							.setLabel("Gomb szöveg")
+							.setLabel(lang.sorsolas_new_modal_btn_text)
 							.setStyle(TextInputStyle.Short)
 							.setRequired(false)
 						),
@@ -66,7 +67,7 @@ export default {
 						.addComponents(
 							new TextInputBuilder()
 							.setCustomId("sorsolas-new-message")
-							.setLabel("Üzenet")
+							.setLabel(lang.sorsolas_new_modal_text)
 							.setStyle(TextInputStyle.Paragraph)
 							.setRequired(true)
 						)
@@ -82,9 +83,14 @@ export default {
 				const btntext = modal_response.fields.getTextInputValue("sorsolas-new-btntext");
 				const text = modal_response.fields.getTextInputValue("sorsolas-new-message");
 				
+				if (!parseEmoji(btnemoji)) {
+					modal_response.reply({ content: "❌ Hibás emoji", ephemeral: true });
+					return;
+				}
+
 				const message = await modal_response.reply({
 					ephemeral: true,
-					content: `**SORSOLÁS ÜZENET ELŐNÉZET:**\n\n${text}\n`,
+					content: lang.sorsolas_new_preview.replace("{1}", text),
 					components: [
 						new ActionRowBuilder<MessageActionRowComponentBuilder>()
 						.addComponents(
@@ -100,12 +106,12 @@ export default {
 							.setCustomId("sorsolas-new-send")
 							.setStyle(ButtonStyle.Primary)
 							.setEmoji("📧")
-							.setLabel("Küldés"),
+							.setLabel(lang.sorsolas_new_send_btn),
 							new ButtonBuilder()
 							.setCustomId("sorsolas-new-discard")
 							.setStyle(ButtonStyle.Secondary)
 							.setEmoji("🗑")
-							.setLabel("Elvetés"),
+							.setLabel(lang.sorsolas_new_discard_btn),
 						),
 					],
 				});
@@ -123,13 +129,13 @@ export default {
 				collector.on('collect', async (i) => {
 					switch (i.customId) {
 						case "sorsolas-new-test-btn":
-							i.reply({ content: "😎 Beléptél a sorsolásba (teszt)", ephemeral: true });
+							i.reply({ content: lang.enter_sorsolas, ephemeral: true });
 						break;
 						case "sorsolas-new-send":
-							const msg = await channel.send("Betöltés...");
+							const msg = await channel.send(lang.sorsolas_new_loading);
 							const start_time = Date.now();
 							if (!interaction.guildId) {
-								interaction.reply("Váratlan hiba lépet fel: NO_GUILD_ID");
+								interaction.reply(lang.unexpected_error.replace("{1}", "NO_GUILD_ID"));
 								msg.delete();
 								return;
 							}
@@ -149,12 +155,12 @@ export default {
 								]
 							});
 							if (i.replied) break;
-							i.reply({ content: "✅ A sorsolás elindult", ephemeral: true });
+							i.reply({ content: lang.sorsolas_started, ephemeral: true });
 						break;
 						case "sorsolas-new-discard":
 							if (i.replied) break;
 							collector.stop();
-							i.reply({ content: "❌ Sorsolás elvetve", ephemeral: true });
+							i.reply({ content: lang.sorsolas_discarded, ephemeral: true });
 						break;
 					}
 				});
@@ -166,19 +172,19 @@ export default {
 				const sorsolas_id = options.getInteger("sorsolás_id", true);
 				const sorsolas = await db.hGetAll(`sorsolasok:${interaction.guildId}:${sorsolas_id}`);
 				if (!sorsolas || !sorsolas.messageId) {
-					interaction.reply({ content: "❌ Nincs ilyen sorsolás", ephemeral: true });
+					interaction.reply({ content: lang.sorsolas_not_found, ephemeral: true });
 					return;
 				}
 				const winner = await db.sRandMember(`sorsolasok:${interaction.guildId}:${sorsolas_id}:participants`);
 				
 				const smsg = await (await interaction.guild?.channels.fetch(sorsolas.channelId) as GuildTextBasedChannel)?.messages.fetch(sorsolas.messageId);
 				smsg.edit({components: []});
-				smsg.reply(`A sorsolást <@${winner}> nyerte 🎉`);
+				smsg.reply(lang.sorsolas_winner.replace("{1}", `<@${winner}>`));
 				
 				await db.sRem("sorsolasok", `${interaction.guildId}:${sorsolas_id}:${sorsolas.time}`);
 				await db.del([`sorsolasok:${interaction.guildId}:${sorsolas_id}`, `sorsolasok:${interaction.guildId}:${sorsolas_id}:participants`]);
 				
-				await interaction.reply({ content: `✅ A sorsolás lezárva\n**Nyertes:** <@${winner}>`, ephemeral: true });
+				await interaction.reply({ content: lang.sorsolas_closed.replace("{1}", `<@${winner}>`), ephemeral: true });
 			break;
 		}
 	},

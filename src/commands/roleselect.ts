@@ -17,6 +17,7 @@ import {
 	type ModalActionRowComponentBuilder
 } from "discord.js";
 import type { Command } from "../lib/Command";
+import lang from "../lang";
 
 export default {
 	data: new SlashCommandBuilder()
@@ -54,13 +55,13 @@ export default {
 			await interaction.showModal(
 				new ModalBuilder()
 				.setCustomId("roleselect-new-modal")
-				.setTitle("Új rang választó")
+				.setTitle(lang.roleselect_new_modal_title)
 				.addComponents(
 					new ActionRowBuilder<ModalActionRowComponentBuilder>()
 					.addComponents(
 						new TextInputBuilder()
 						.setCustomId("roleselect-new-msg")
-						.setLabel("Üzenet")
+						.setLabel(lang.roleselect_new_modal_text)
 						.setStyle(TextInputStyle.Paragraph)
 						.setRequired(true)
 					)

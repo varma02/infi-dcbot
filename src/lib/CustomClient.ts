@@ -2,6 +2,7 @@ import type { RedisClientType } from "@redis/client";
 import { Client, Collection, EmbedBuilder, Events, TextChannel, type ClientOptions, type GuildTextBasedChannel } from "discord.js";
 import type { Command } from "./Command";
 import { Glob } from "bun";
+import lang from "../lang";
 
 export class CustomClient extends Client {
 	commands: Collection<string, Command>;
@@ -20,17 +21,17 @@ export class CustomClient extends Client {
 					try {
 						await command.execute(interaction, this.db);
 					} catch (err) {
-						if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setDescription("Váratlan hiba történt").setColor("Red")]});
+						if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setDescription(lang.unexpected_error.replace('{1}', 'COMMAND_FAILED')).setColor("Red")]});
 						console.warn(`Command \`${interaction.commandName}\` returned with an error`, err);
 					}
 				} else {
-					interaction.reply({embeds: [new EmbedBuilder().setDescription("Nincs ilyen parancs").setColor("Red")]});
+					interaction.reply({embeds: [new EmbedBuilder().setDescription(lang.command_does_not_exist).setColor("Red")]});
 					console.warn(`Unable to find command: ${interaction.commandName}`);
 				}
 			} else if (interaction.isButton()) {
 				if (interaction.customId.startsWith("sorsolas-register-")) {
 					await this.db.sAdd(`sorsolasok:${interaction.guildId}:${interaction.customId.split("-")[2]}:participants`, interaction.user.id);
-					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(`😎 Beléptél a sorsolásba`)], ephemeral: true});
+					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.enter_sorsolas)], ephemeral: true});
 				}
 			}
 			// else if (interaction.isMessageComponent()) {
@@ -65,7 +66,7 @@ export class CustomClient extends Client {
 						
 						const smsg = await (await this.channels.fetch(sorsolas.channelId) as GuildTextBasedChannel)?.messages.fetch(sorsolas.messageId);
 						smsg.edit({components: []});
-						smsg.reply(`A sorsolást <@${winner}> nyerte 🎉`);
+						smsg.reply(lang.sorsolas_winner.replace("{1}", `<@${winner}>`));
 
 						await this.db.sRem("sorsolasok", `${guildId}:${sorsolas_id}:${ss[2]}`);
 						await this.db.del([`sorsolasok:${guildId}:${sorsolas_id}`, `sorsolasok:${guildId}:${sorsolas_id}:participants`]);

@@ -2,9 +2,12 @@ import { GatewayIntentBits as Intent } from 'discord.js';
 import { CustomClient } from './lib/CustomClient';
 import { createClient } from 'redis';
 
-const db = createClient();
+const db = createClient({
+	url: process.env.REDIS_URL,
+});
 try {
 	await db.connect();
+	if (!db.isReady) throw new Error();
 	console.log("Redis is ready");
 } catch {
 	console.error("Unable to connect to redis database!");
@@ -17,10 +20,10 @@ const client = new CustomClient({
 });
 
 for (const event of ["SIGINT", "SIGTERM", "SIGKILL"]) {
-	process.once(event, async () => {
+	process.once(event, () => {
 		console.warn("\nLogging out");
-		await client.destroy();
-		await db.quit();
+		client.destroy();
+		db.quit();
 	});
 }
 
