@@ -53,7 +53,8 @@ export default {
     ticket_no_rights: "❌ Nincs jogosultságod a ticketek kezelésére",
     ticket_not_found: "❌ Nincs ilyen ticket",
     ticket_deleted: "Ticket törölve",
-    ticket_status_changed: "Ticket státusza megváltozott: {1}",
+    ticket_closed: "Ticket lezárva",
+    ticket_status_changed: "Ticket állapota megváltozott: {1}",
     ticket_role_changed: "Rang beállítva: {1}",
     ticket_category_changed: "Kategória beállítva: {1}",
     ticket_statuses: {

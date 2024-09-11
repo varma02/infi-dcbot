@@ -136,6 +136,10 @@ export default {
 						delete roles[i.values[0]];
 						i.reply({ content: "❌ Rang törölve", ephemeral: true });
 					} else {
+						if (Object.keys(roles).length >= 5) {
+							await i.reply({ content: "❌ Maximum 5 rang választható", ephemeral: true });
+							return;
+						}
 						await i.showModal(
 							new ModalBuilder()
 							.setCustomId("roleselect-new-role-modal")
