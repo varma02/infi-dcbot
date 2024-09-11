@@ -24,12 +24,6 @@ import {
 import type { Command } from "../lib/Command";
 import lang from "../lang";
 
-const ticket_statuses:any = {
-	"ticket_status_open" : "Nyitott",
-	"ticket_status_closed" : "Lezárt",
-	"ticket_status_inprogress" : "Folyamatban",
-}
-
 export default {
 	data: new SlashCommandBuilder()
 		.setDMPermission(false)
@@ -98,13 +92,13 @@ export default {
 			await interaction.showModal(
 				new ModalBuilder()
 				.setCustomId("ticket-new-modal")
-				.setTitle("Új ticket létrehozása")
+				.setTitle(lang.ticket_new_modal_title)
 				.addComponents(
 					new ActionRowBuilder<ModalActionRowComponentBuilder>()
 					.addComponents(
 						new TextInputBuilder()
 						.setCustomId("ticket-new-msg")
-						.setLabel("Üzenet")
+						.setLabel(lang.ticket_new_modal_text)
 						.setStyle(TextInputStyle.Paragraph)
 						.setRequired(true)
 					)
@@ -127,7 +121,7 @@ export default {
 				]
 			});
 			if (!channel) {
-				modal_response.reply({content: "Hiba történt a csatorna létrehozása közben", ephemeral: true});
+				modal_response.reply({content: lang.ticket_new_channel_create_failed, ephemeral: true});
 				return;
 			}
 			await channel.send({
@@ -138,48 +132,48 @@ export default {
 					new ButtonBuilder()
 					.setStyle(ButtonStyle.Danger)
 					.setCustomId(`ticket-close-${ticket_id}`)
-					.setLabel("Lezárás")
+					.setLabel(lang.ticket_close)
 				)
 			]});
 			await db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, {user:interaction.user.id, channel: channel.id, status: "ticket_status_open"});
 			
-			await modal_response.reply({content: "Ticket létrehozva, a továbbiakat ebben a csatornában látod: {1}".replace("{1}", `<#${channel.id}>`), ephemeral: true});
+			await modal_response.reply({content: lang.ticket_created.replace("{1}", `<#${channel.id}>`), ephemeral: true});
 
 
 		} else if (options.getSubcommand() === "törlés") {
 			if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator) && 
 			!interaction.member?.roles.cache.has(ticket_settings.role)) {
-				await interaction.reply({content: "Nincs jogosultságod a ticketek törlésére", ephemeral: true});
+				await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
 				return;
 			}
 			const ticket_id = options.getString("id", true);
 			const ticket = await db.hGetAll(`ticket:${interaction.guildId}:${ticket_id}`);
 			if (!ticket) {
-				await interaction.reply({content: "Nincs ilyen ticket", ephemeral: true});
+				await interaction.reply({content: lang.ticket_not_found, ephemeral: true});
 				return;
 			}
 			const channel = interaction.guild?.channels.cache.get(ticket.channel);
 			if (channel) await channel.delete();
 			await db.del(`ticket:${interaction.guildId}:${ticket_id}`);
-			if (!interaction.replied && interaction.channel) await interaction.reply({content: "Ticket törölve", ephemeral: true});
+			if (!interaction.replied && interaction.channel) await interaction.reply({content: lang.ticket_deleted, ephemeral: true});
 
 
 		} else if (options.getSubcommand() === "státusz") {
 			if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator) && 
 			!interaction.member?.roles.cache.has(ticket_settings.role)) {
-				await interaction.reply({content: "Nincs jogosultságod a ticket módosítására", ephemeral: true});
+				await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
 				return;
 			}
 			const ticket_id = options.getString("id", true);
 			const status = options.getString("státusz", true);
 			const ticket = await db.hGetAll(`ticket:${interaction.guildId}:${ticket_id}`);
 			if (!ticket) {
-				await interaction.reply({content: "Nincs ilyen ticket", ephemeral: true});
+				await interaction.reply({content: lang.ticket_not_found, ephemeral: true});
 				return;
 			}
 			const channel = interaction.guild?.channels.cache.get(ticket.channel) as GuildTextBasedChannel;
 			if (channel) {
-				await channel.send({content: `A ticket állapota megváltozott: ${ticket_statuses[status]}`});
+				await channel.send({content: lang.ticket_status_changed.replace("{1}", lang.ticket_statuses[status])});
 			}
 			if (status == "ticket_status_closed") {
 				await channel?.edit({permissionOverwrites: [
@@ -189,27 +183,27 @@ export default {
 				]});
 			}
 			await db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, "status", status);
-			await interaction.reply({content: `Státusz módosítva: ${ticket_statuses[status]}`, ephemeral: true});
+			await interaction.reply({content: lang.ticket_status_changed.replace("{1}", lang.ticket_statuses[status]), ephemeral: true});
 
 
 		} else if (options.getSubcommand() === "kategória_beállítása") {
 			if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator)) {
-				await interaction.reply({content: "Nincs jogosultságod a beállítások módosítására", ephemeral: true});
+				await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
 				return;
 			}
 			const category_id = options.getString("id", true);
 			await db.hSet(`ticket:${interaction.guildId}`, "category", category_id);
-			await interaction.reply({content: `Kategória beállítva: <#${category_id}>`, ephemeral: true});
+			await interaction.reply({content: lang.ticket_category_changed.replace("{1}", `<#${category_id}>`), ephemeral: true});
 
 
 		} else if (options.getSubcommand() === "rang_beállítása") {
 			if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator)) {
-				await interaction.reply({content: "Nincs jogosultságod a beállítások módosítására", ephemeral: true});
+				await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
 				return;
 			}
 			const role = options.getRole("rang", true);
 			await db.hSet(`ticket:${interaction.guildId}`, "role", role.id);
-			await interaction.reply({content: `Rang beállítva: <@&${role.id}>`, ephemeral: true});
+			await interaction.reply({content: lang.ticket_role_changed.replace("{1}", `<@&${role.id}>`), ephemeral: true});
 		}
 	}
 } as Command;

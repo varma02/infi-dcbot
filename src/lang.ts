@@ -1,6 +1,7 @@
 export default {
     unexpected_error: "Váratlan hiba történt [{1}]",
     command_does_not_exist: "Nincs ilyen parancs",
+    invalid_emoji: "❌ Hibás emoji",
 
     welcome_message_not_found: "❌ Nincs beállítva üdvözlő üzenet",
     welcome_message_saved: "✅ Üdvözlő üzenet elmentve",
@@ -43,4 +44,24 @@ export default {
     roleselect_selected: "Mostantól {1} rangod van",
     roleselect_not_found: "❌ Nincs ilyen rang választó",
     roleselect_removed: "🗑 Rang választó törölve",
+
+    ticket_new_modal_title: "Új ticket létrehozása",
+    ticket_new_modal_text: "Üzenet",
+    ticket_new_channel_create_failed: "❌ Hiba történt a csatorna létrehozása közben",
+    ticket_created: "Ticket létrehozva, a továbbiakat ebben a csatornában látod: {1}",
+    ticket_close: "Lezárás",
+    ticket_no_rights: "❌ Nincs jogosultságod a ticketek kezelésére",
+    ticket_not_found: "❌ Nincs ilyen ticket",
+    ticket_deleted: "Ticket törölve",
+    ticket_status_changed: "Ticket státusza megváltozott: {1}",
+    ticket_role_changed: "Rang beállítva: {1}",
+    ticket_category_changed: "Kategória beállítva: {1}",
+    ticket_statuses: {
+        "ticket_status_open" : "Nyitott",
+        "ticket_status_closed" : "Lezárt",
+        "ticket_status_inprogress" : "Folyamatban",
+    } as {[key: string]: string},
+
+    xp_ranklist: "**XP ranglista:**",
+    xp_user: "{1} XP-je: {2}",
 }

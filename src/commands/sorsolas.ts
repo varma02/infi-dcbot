@@ -85,7 +85,7 @@ export default {
 				const text = modal_response.fields.getTextInputValue("sorsolas-new-message");
 				
 				if (!parseEmoji(btnemoji)) {
-					modal_response.reply({ content: "❌ Hibás emoji", ephemeral: true });
+					modal_response.reply({ content: lang.invalid_emoji, ephemeral: true });
 					return;
 				}
 

@@ -35,12 +35,12 @@ export default {
 			const users = await db.hGetAll(`xp:${interaction.guildId}`);
 			const sorted = Object.entries(users).sort((a, b) => parseInt(b[1]) - parseInt(a[1]));
 			if (!sorted.length) return await interaction.reply("Még senki nem szerezett XP-t");
-			await interaction.reply(`**XP ranglista:**\n${sorted.slice(0, 10).map((user, index) => `**#${index + 1}** <@${user[0]}> - ${user[1]} XP`).join("\n")}`);
+			await interaction.reply(`${lang.xp_ranklist}\n${sorted.slice(0, 10).map((user, index) => `**#${index + 1}** <@${user[0]}> - ${user[1]} XP`).join("\n")}`);
 
 		} else if (options.getSubcommand() === "xp") {
 			const user = options.getUser("felhasználó") || interaction.user;
 			const xp = await db.hGet(`xp:${interaction.guildId}`, user.id);
-			await interaction.reply(`**<@${user.id}>** XP-je: ${xp || 0}`);
+			await interaction.reply(lang.xp_user.replace("{1}", `<@${user.id}>`).replace("{2}", xp || "0"));
 		}
 	}
 } as Command;
