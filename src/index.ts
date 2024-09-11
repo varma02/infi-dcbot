@@ -15,7 +15,7 @@ try {
 }
 
 const client = new CustomClient({
-	intents: [Intent.Guilds, Intent.GuildMembers],
+	intents: [Intent.Guilds, Intent.GuildMembers, Intent.GuildMessages, Intent.GuildVoiceStates],
 	database: db,
 });
 

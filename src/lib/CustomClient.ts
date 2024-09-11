@@ -59,10 +59,11 @@ export class CustomClient extends Client {
 		});
 
 		this.on(Events.MessageCreate, async (message) => {
+			console.log("msg");
 			if (message.author.bot) return;
 			await this.db.hIncrBy(`xp:${message.guildId}`, message.author.id, 5);
 		});
-
+		
 		this.once(Events.ClientReady, () => {
 			setInterval(async () => {
 				(async ()=> {
