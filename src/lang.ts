@@ -4,7 +4,7 @@ export default {
 
     welcome_message_not_found: "❌ Nincs beállítva üdvözlő üzenet",
     welcome_message_saved: "✅ Üdvözlő üzenet elmentve",
-    welcome_message_removed: " Üdvözlő üzenet törölve",
+    welcome_message_removed: "🗑 Üdvözlő üzenet törölve",
     welcome_message_edit: "Üdvözlő üzenet szerkesztése",
     welcome_message_edit_label: "Üzenet",
     welcome_message_preview: "**ÜDVÖZLŐ ÜZENET ELŐNÉZETE:**\n\n{1}",
@@ -25,13 +25,13 @@ export default {
     sorsolas_new_modal_btn_text: "Gomb felirat",
     sorsolas_new_modal_text: "Üzenet",
     sorsolas_new_loading: "Betöltés...",
-    sorsolas_new_preview: "SORSOLÁS ÜZENET ELŐNÉZET:**\n\n{1}",
+    sorsolas_new_preview: "**SORSOLÁS ÜZENET ELŐNÉZET:**\n\n{1}",
     sorsolas_new_send_btn: "Indítás",
     sorsolas_new_discard_btn: "Elvetés",
 
     roleselect_new_modal_title: "Új rang választó",
     roleselect_new_modal_text: "Üzenet",
-    roleselect_new_preview: "RANG VÁLASZTÓ ÜZENET ELŐNÉZET:**\n\n{1}",
+    roleselect_new_preview: "**RANG VÁLASZTÓ ÜZENET ELŐNÉZET:**\n\n{1}",
     roleselect_new_select_placeholder: "Válassz egy rangot...",
     roleselect_new_send_btn: "Küldés",
     roleselect_new_discard_btn: "Elvetés",
@@ -40,5 +40,7 @@ export default {
     roleselect_new_role_title: "Új rang hozzáadása",
     roleselect_new_role_btn_label: "Gomb szöveg",
     roleselect_new_role_btn_emoji: "Gomb emoji",
-    roleselect_selected: "Már {1} vagy",
+    roleselect_selected: "Mostantól {1} rangod van",
+    roleselect_not_found: "❌ Nincs ilyen rang választó",
+    roleselect_removed: "🗑 Rang választó törölve",
 }

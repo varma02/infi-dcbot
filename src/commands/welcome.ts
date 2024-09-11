@@ -35,7 +35,8 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName("üdvözlő_üzenet")
 		.setDescription("Üdvözlő üzenet beállítása új tagoknak")
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false),
 		
 	async execute(interaction, db) {
 		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || lang.welcome_message_not_found;

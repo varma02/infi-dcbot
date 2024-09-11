@@ -35,10 +35,25 @@ export class CustomClient extends Client {
 				} else if (interaction.customId.startsWith("roleselect-")) {
 					const split = interaction.customId.split("-")[1].split(":");
 					const roles = await this.db.hGet(`roleselect:${interaction.guildId}:${split[0]}`, "roles")
-					console.log(roles);
 					if (!roles || Object.keys(roles).includes(split[1])) return;
 					await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.add(split[1]);
-					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected)], ephemeral: true});
+					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected.replace("{1}", `<@&${split[1]}>`))], ephemeral: true});
+				} else if (interaction.customId.startsWith("ticket-close-")) {
+					const ticket_id = interaction.customId.split("-")[2];
+					const ticket = await this.db.hGetAll(`ticket:${interaction.guildId}:${ticket_id}`);
+					if (!ticket || ticket.user !== interaction.user.id) {
+						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription("Nem található ilyen ticket")], ephemeral: true});
+						return;
+					}
+					const channel = await this.channels.fetch(ticket.channel) as GuildTextBasedChannel;
+					if (!channel) {
+						await this.db.del(`ticket:${interaction.guildId}:${ticket_id}`);
+						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription("Nem található ilyen ticket")], ephemeral: true});
+						return;
+					}
+					await this.db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, "status", "ticket_status_closed");
+					await channel.send({content: `A ticket állapota megváltozott: Lezárva`});
+					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription("Ticket lezárva")], ephemeral: true});
 				}
 			}
 			// else if (interaction.isMessageComponent()) {

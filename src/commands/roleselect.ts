@@ -14,6 +14,7 @@ import {
 	RoleSelectMenuBuilder, 
 	SlashCommandBuilder, 
 	SlashCommandChannelOption, 
+	SlashCommandStringOption, 
 	SlashCommandSubcommandBuilder, 
 	TextInputBuilder, 
 	TextInputStyle, 
@@ -27,6 +28,7 @@ import lang from "../lang";
 
 export default {
 	data: new SlashCommandBuilder()
+		.setDMPermission(false)
 		.setName("rang_választó")
 		.setDescription("Rang választó üzenet létrehozása / szerkesztése")
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
@@ -43,13 +45,12 @@ export default {
 			)
 		).addSubcommand(
 			new SlashCommandSubcommandBuilder()
-			.setName("szerkesztés")
-			.setDescription("Meglévő rang választó üzenet szerkesztése")
-			.addChannelOption(
-				new SlashCommandChannelOption()
+			.setName("törlés")
+			.setDescription("Meglévő rang választó üzenet törlése")
+			.addStringOption(
+				new SlashCommandStringOption()
 				.setName("id")
 				.setDescription("Az rang választó azonosítója")
-				.addChannelTypes(ChannelType.GuildText)
 				.setRequired(true)
 			)
 		),
@@ -133,6 +134,7 @@ export default {
 					if (!i.isRoleSelectMenu()) return;
 					if (roles[i.values[0]]) {
 						delete roles[i.values[0]];
+						i.reply({ content: "❌ Rang törölve", ephemeral: true });
 					} else {
 						await i.showModal(
 							new ModalBuilder()
@@ -166,6 +168,7 @@ export default {
 							return;
 						}
 						roles[i.values[0]] = {label, emoji: emoji};
+						modal_response.reply({ content: "✅ Rang hozzáadva", ephemeral: true });
 					}
 					const row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
 					for (const [k, v] of Object.entries(roles)) {
@@ -177,37 +180,51 @@ export default {
 							.setEmoji(v.emoji)
 						);
 					}
+					const components = [
+						new ActionRowBuilder<MessageActionRowComponentBuilder>()
+						.addComponents(
+							new RoleSelectMenuBuilder()
+								.setCustomId("roleselect-new-menu")
+								.setPlaceholder(lang.roleselect_new_select_placeholder)
+								.setMaxValues(1)
+								.setMinValues(0),
+						),
+						new ActionRowBuilder<MessageActionRowComponentBuilder>()
+						.addComponents(
+							new ButtonBuilder()
+								.setCustomId("roleselect-new-save")
+								.setLabel(lang.roleselect_new_send_btn)
+								.setEmoji("💌")
+								.setStyle(ButtonStyle.Primary),
+							new ButtonBuilder()
+								.setCustomId("roleselect-new-discard")
+								.setLabel(lang.roleselect_new_discard_btn)
+								.setEmoji("🗑️")
+								.setStyle(ButtonStyle.Secondary),
+						)
+					];
+					if (Object.keys(roles).length) {
+						components.unshift(row);
+					}
 					msg.edit({
-						components: [
-							row,
-							new ActionRowBuilder<MessageActionRowComponentBuilder>()
-							.addComponents(
-								new RoleSelectMenuBuilder()
-									.setCustomId("roleselect-new-menu")
-									.setPlaceholder(lang.roleselect_new_select_placeholder)
-									.setMaxValues(1)
-									.setMinValues(0),
-							),
-							new ActionRowBuilder<MessageActionRowComponentBuilder>()
-							.addComponents(
-								new ButtonBuilder()
-									.setCustomId("roleselect-new-save")
-									.setLabel(lang.roleselect_new_send_btn)
-									.setEmoji("💌")
-									.setStyle(ButtonStyle.Primary),
-								new ButtonBuilder()
-									.setCustomId("roleselect-new-discard")
-									.setLabel(lang.roleselect_new_discard_btn)
-									.setEmoji("🗑️")
-									.setStyle(ButtonStyle.Secondary),
-							)
-						],
+						components: components,
 					});
 				}
 			});
 			collector.on("end", async () => {
 				await msg.edit({ components: [] });
 			});
+		} else if (options.getSubcommand() === "törlés") {
+			const id = options.getString("id", true);
+			const data = await db.hGetAll(`roleselect:${interaction.guildId}:${id}`);
+			if (!data || !data.channel) {
+				await interaction.reply({ content: lang.roleselect_not_found, ephemeral: true });
+				return;
+			}
+			const channel = await interaction.client.channels.fetch(data.channel) as GuildTextBasedChannel;
+			await channel.messages.delete(data.message);
+			await db.del(`roleselect:${interaction.guildId}:${id}`);
+			await interaction.reply({ content: lang.roleselect_removed, ephemeral: true });
 		}
 	}
 } as Command;

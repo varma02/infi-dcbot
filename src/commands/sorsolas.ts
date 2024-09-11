@@ -7,6 +7,7 @@ export default {
 	.setName("sorsolás")
 	.setDescription("Sorsolások kezelése, szerkesztése, lezárása")
 	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.setDMPermission(false)
 	.addSubcommand(
 		new SlashCommandSubcommandBuilder()
 		.setName("új")
