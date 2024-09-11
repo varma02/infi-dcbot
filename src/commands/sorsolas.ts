@@ -121,11 +121,6 @@ export default {
 					filter: (i) => i.user.id == interaction.user.id && i.customId.startsWith("sorsolas-new-"),
 				});
 
-				// const collector = message.createMessageComponentCollector({ 
-				// 	componentType: ComponentType.Button, time: 1200000,
-				// 	filter: (i) => i.user.id == interaction.user.id,
-				// });
-				
 				collector.on('collect', async (i) => {
 					switch (i.customId) {
 						case "sorsolas-new-test-btn":

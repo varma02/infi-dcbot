@@ -32,6 +32,13 @@ export class CustomClient extends Client {
 				if (interaction.customId.startsWith("sorsolas-register-")) {
 					await this.db.sAdd(`sorsolasok:${interaction.guildId}:${interaction.customId.split("-")[2]}:participants`, interaction.user.id);
 					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.enter_sorsolas)], ephemeral: true});
+				} else if (interaction.customId.startsWith("roleselect-")) {
+					const split = interaction.customId.split("-")[1].split(":");
+					const roles = await this.db.hGet(`roleselect:${interaction.guildId}:${split[0]}`, "roles")
+					console.log(roles);
+					if (!roles || Object.keys(roles).includes(split[1])) return;
+					await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.add(split[1]);
+					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected)], ephemeral: true});
 				}
 			}
 			// else if (interaction.isMessageComponent()) {

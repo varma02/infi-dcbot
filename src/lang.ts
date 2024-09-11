@@ -37,4 +37,8 @@ export default {
     roleselect_new_discard_btn: "Elvetés",
     roleselect_new_saved: "✅ Rang választó elmentve",
     roleselect_new_discarded: "❌ Rang választó elvetve",
+    roleselect_new_role_title: "Új rang hozzáadása",
+    roleselect_new_role_btn_label: "Gomb szöveg",
+    roleselect_new_role_btn_emoji: "Gomb emoji",
+    roleselect_selected: "Már {1} vagy",
 }
