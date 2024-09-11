@@ -31,4 +31,10 @@ export default {
 
     roleselect_new_modal_title: "Új rang választó",
     roleselect_new_modal_text: "Üzenet",
+    roleselect_new_preview: "RANG VÁLASZTÓ ÜZENET ELŐNÉZET:**\n\n{1}",
+    roleselect_new_select_placeholder: "Válassz egy rangot...",
+    roleselect_new_send_btn: "Küldés",
+    roleselect_new_discard_btn: "Elvetés",
+    roleselect_new_saved: "✅ Rang választó elmentve",
+    roleselect_new_discarded: "❌ Rang választó elvetve",
 }

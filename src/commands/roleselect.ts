@@ -7,6 +7,8 @@ import {
 	ComponentType, 
 	ModalBuilder, 
 	PermissionFlagsBits, 
+	Role, 
+	RoleSelectMenuBuilder, 
 	SlashCommandBuilder, 
 	SlashCommandChannelOption, 
 	SlashCommandSubcommandBuilder, 
@@ -51,7 +53,6 @@ export default {
 	async execute(interaction, db) {
 		const options = interaction.options as CommandInteractionOptionResolver;
 		if (options.getSubcommand() === "új") {
-			const channel = options.getChannel("szöveges_csatorna") as GuildTextBasedChannel;
 			await interaction.showModal(
 				new ModalBuilder()
 				.setCustomId("roleselect-new-modal")
@@ -66,7 +67,52 @@ export default {
 						.setRequired(true)
 					)
 				)
-			)
+			);
+
+			const modal_response = await interaction.awaitModalSubmit({
+				time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "roleselect-new-modal" && i.user.id == interaction.user.id});
+			
+			const channel = options.getChannel("szöveges_csatorna", true, [ChannelType.GuildText]);
+			const text = modal_response.fields.getTextInputValue("roleselect-new-msg");
+			const roles: Role[] = [];
+			
+			const msg = await modal_response.reply({
+				ephemeral: true,
+				content: lang.roleselect_new_preview.replace("{1}", text),
+				components: [
+					new ActionRowBuilder<MessageActionRowComponentBuilder>()
+					.addComponents(
+						new RoleSelectMenuBuilder()
+							.setCustomId("roleselect-new-menu")
+							.setPlaceholder(lang.roleselect_new_select_placeholder)
+							.setMaxValues(1),
+						new ButtonBuilder()
+							.setCustomId("roleselect-new-save")
+							.setLabel(lang.roleselect_new_send_btn)
+							.setEmoji("💌")
+							.setStyle(ButtonStyle.Primary),
+						new ButtonBuilder()
+							.setCustomId("roleselect-new-discard")
+							.setLabel(lang.roleselect_new_discard_btn)
+							.setEmoji("🗑️")
+							.setStyle(ButtonStyle.Secondary),
+					)
+				],
+			});
+
+			const collector = msg.createMessageComponentCollector({componentType: ComponentType.Button, time: 1200000});
+			collector.on("collect", async (i) => {
+				if (i.customId == "roleselect-new-save") {
+					await i.reply({ content: lang.roleselect_new_saved, ephemeral: true });
+					collector.stop();
+				} else if (i.customId == "roleselect-new-discard") {
+					await i.reply({ content: lang.roleselect_new_discarded, ephemeral: true });
+					collector.stop();
+				}
+			});
+			collector.on("end", async () => {
+				await msg.edit({ components: [] });
+			});
 		}
 	}
 } as Command;
