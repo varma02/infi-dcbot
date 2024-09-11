@@ -6,5 +6,5 @@
 - Sorsolás ✅
 - Káromkodás szűrés (már van discordban) ❌
 - Ticket rendszer (pl hibabejelentések, stb) ✅
-- XP rendszer (voice-on töltött idő és üzenet küldés mennyisége alapján)
-- HA lehetséges akkor youtube lejátszás
+- XP rendszer (voice-on töltött idő és üzenet küldés mennyisége alapján) ✅
+- HA lehetséges akkor youtube lejátszás ⏸
