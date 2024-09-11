@@ -56,24 +56,25 @@ export class CustomClient extends Client {
 					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription("Ticket lezárva")], ephemeral: true});
 				}
 			}
-			// else if (interaction.isMessageComponent()) {
-			// 	if (interaction.customId.startsWith("roleselect-") && await this.db.get(`roleselect-messages:${interaction.guildId}:${interaction.channelId}:${interaction.message.id}`)) {
-			// 		try {
-			// 			await interaction.guild?.members.resolve(interaction.user.id)?.roles.add(interaction.customId.split("-")[1]),
-			// 			await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(`a`)], ephemeral: true});
-			// 		} catch (err) {
-			// 			if (!interaction.replied) interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription("Váratlan hiba történt")], ephemeral: true});
-			// 			console.warn(err);
-			// 		}
-			// 	} else if (interaction.customId === "lottery-register") {
-			// 		await this.db.sAdd(`lottery-users:${interaction.guildId}:${interaction.channelId}:${interaction.message.id}`, interaction.user.id);
-			// 		await interaction.reply({embeds:[new EmbedBuilder().setColor("Blue").setDescription("Sikeresen bejelentkeztél a sorsolásra")], ephemeral:true});
-			// 	}
-			// }
+		});
+
+		this.on(Events.MessageCreate, async (message) => {
+			if (message.author.bot) return;
+			await this.db.hIncrBy(`xp:${message.guildId}`, message.author.id, 5);
 		});
 
 		this.once(Events.ClientReady, () => {
 			setInterval(async () => {
+				(async ()=> {
+					for (const guild of this.guilds.cache.values()) {
+						for (const voice of guild.voiceStates.cache.values()) {
+							if (voice.channelId && voice.member) {
+								await this.db.hIncrBy(`xp:${guild.id}`, voice.member.id, 1);
+							}
+						}
+					}
+				})()
+
 				const sorsolasok = await this.db.sMembers("sorsolasok");
 				for (const sorsolas of sorsolasok) {
 					const ss = sorsolas.split(":");
@@ -107,17 +108,6 @@ export class CustomClient extends Client {
 			if (!member.user.bot && welcomemsg) {
 				if (!member.dmChannel) await member.createDM();
 				if (member.dmChannel) member.dmChannel.send(welcomemsg);
-				// if (member.dmChannel) member.dmChannel.send({embeds:[new EmbedBuilder()
-				// 	.setTitle("Welcome to X server")
-				// 	.setDescription("I hope you have a great time here. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sit pariatur consequatur nihil, at dolor harum modi cum similique iusto voluptatibus ut natus eaque ad beatae blanditiis excepturi omnis velit. Recusandae quo ipsa corporis, quos quasi, eius eligendi sit vero illo molestias ducimus voluptate qui. Dolor blanditiis culpa, aliquid, praesentium facilis enim quo numquam, labore iusto atque ipsa rem doloremque odit id consequatur excepturi quis. Ducimus reiciendis necessitatibus error ipsam fugiat cumque repudiandae sint reprehenderit, libero omnis natus quasi modi porro, saepe adipisci officiis magnam! Veniam quia minima asperiores dolores deserunt assumenda quaerat quas, dolore, aspernatur ducimus, consectetur aperiam! Assumenda, inventore?")
-				// 	.addFields([
-				// 		{name: "Rules", value: "1. Don't swear\n2.Some rule\n3. Don't do something\n4. Be respectful"},
-				// 		{name: "How to engage", value: "#channel is for X\n#other-channel is where you discuss Y"},
-				// 	])
-				// 	.setFooter({text:"Stay safe out there - Server owner(s)"})
-				// 	.setColor("Aqua")
-				// 	.setImage("https://i.ytimg.com/vi/6FNHe3kf8_s/maxresdefault.jpg")
-				// ]});
 			}
 		});
 	}
