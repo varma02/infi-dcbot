@@ -65,4 +65,10 @@ export default {
 
     xp_ranklist: "**XP ranglista:**",
     xp_user: "{1} XP-je: {2}",
+    xp_reset_confirm: "Biztosan visszaállítod az XP-t?",
+    xp_reset_confirm_btn: "Visszaállítás",
+    xp_reset_cancel_btn: "Mégse",
+    xp_reset: "XP visszaállítva",
+    xp_reset_done: "✅ XP visszaállítva",
+    xp_reset_cancel: "❌ Visszaállítás megszakítva",
 }

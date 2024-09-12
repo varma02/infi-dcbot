@@ -1,5 +1,5 @@
 import type { RedisClientType } from "@redis/client";
-import { Client, Collection, EmbedBuilder, Events, TextChannel, type ClientOptions, type GuildTextBasedChannel } from "discord.js";
+import { Client, Collection, EmbedBuilder, Events, PermissionFlagsBits, TextChannel, type ClientOptions, type GuildTextBasedChannel } from "discord.js";
 import type { Command } from "./Command";
 import { Glob } from "bun";
 import lang from "../lang";
@@ -15,6 +15,7 @@ export class CustomClient extends Client {
 		this.reloadCommands();
 
 		this.on(Events.InteractionCreate, async (interaction) => {
+			console.debug(`Received interaction in guild ${interaction.guildId} of type ${interaction.type}`);
 			if (interaction.isCommand()) {
 				const command = this.commands.get(interaction.commandName);
 				if (command) {
@@ -45,6 +46,12 @@ export class CustomClient extends Client {
 					}
 
 				} else if (interaction.customId.startsWith("ticket-close-")) {
+					const ticket_admin_role = await this.db.hGet(`ticket:${interaction.guildId}`, "role");
+					if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator) && 
+					!interaction.member?.roles.cache.has(ticket_admin_role)) {
+						await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
+						return;
+					}
 					const ticket_id = interaction.customId.split("-")[2];
 					const ticket = await this.db.hGetAll(`ticket:${interaction.guildId}:${ticket_id}`);
 					if (!ticket || ticket.user !== interaction.user.id) {
@@ -65,13 +72,17 @@ export class CustomClient extends Client {
 		});
 
 		this.on(Events.MessageCreate, async (message) => {
-			console.log("msg");
 			if (message.author.bot) return;
 			await this.db.hIncrBy(`xp:${message.guildId}`, message.author.id, 5);
+		});
+
+		this.on(Events.Error, (err) => {
+			console.error(`Unexpected error occured at ${Date.now()}\n`, err);
 		});
 		
 		this.once(Events.ClientReady, () => {
 			setInterval(async () => {
+
 				(async ()=> {
 					for (const guild of this.guilds.cache.values()) {
 						for (const voice of guild.voiceStates.cache.values()) {
@@ -111,6 +122,7 @@ export class CustomClient extends Client {
 		});
 
 		this.on(Events.GuildMemberAdd, async (member) => {
+			console.debug(`Welcoming user ${member.id} (${member.displayName}) to guild ${member.guild.id}`);
 			const welcomemsg = await this.db.get(`welcome-message:${member.guild.id}`);
 			if (!member.user.bot && welcomemsg) {
 				if (!member.dmChannel) await member.createDM();

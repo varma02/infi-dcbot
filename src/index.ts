@@ -21,7 +21,7 @@ const client = new CustomClient({
 
 for (const event of ["SIGINT", "SIGTERM", "SIGKILL"]) {
 	process.once(event, () => {
-		console.warn("\nLogging out");
+		console.warn("\nLogging out...");
 		client.destroy();
 		db.quit();
 	});

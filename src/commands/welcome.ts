@@ -39,6 +39,7 @@ export default {
 		.setDMPermission(false),
 		
 	async execute(interaction, db) {
+		console.debug(`Executing command üdvözlő_üzenet`);
 		let welcometext = await db.get(`welcome-message:${interaction.guildId}`) || lang.welcome_message_not_found;
 		const message = await interaction.reply({
 			content:lang.welcome_message_preview.replace("{1}", welcometext),
@@ -88,7 +89,7 @@ export default {
 		});
 
 		collector.once('end', () => {
-			message.edit({ components: [] });
+			if (message) message.edit({ components: [] });
 		})
 	}
 } as Command;

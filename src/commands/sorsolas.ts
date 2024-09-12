@@ -33,6 +33,7 @@ export default {
 
 	async execute(interaction, db) {
 		const options = interaction.options as CommandInteractionOptionResolver;
+		console.debug(`Executing command sorsolás with subcommand ${options.getSubcommand()}`);
 		switch (options.getSubcommand()) {
 			case "új":
 				await interaction.showModal(
@@ -161,7 +162,7 @@ export default {
 					}
 				});
 				collector.once('end', () => {
-					message.edit({ components: [] });
+					if (message) message.edit({ components: [] });
 				});
 			break;
 			case "lezárás":

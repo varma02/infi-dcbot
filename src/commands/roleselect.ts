@@ -57,6 +57,7 @@ export default {
 		
 	async execute(interaction, db) {
 		const options = interaction.options as CommandInteractionOptionResolver;
+		console.debug(`Executing command rang_választó with subcommand ${options.getSubcommand()}`);
 		if (options.getSubcommand() === "új") {
 			await interaction.showModal(
 				new ModalBuilder()
@@ -215,8 +216,8 @@ export default {
 					});
 				}
 			});
-			collector.on("end", async () => {
-				await msg.edit({ components: [] });
+			collector.once("end", () => {
+				if (msg) msg.edit({ components: [] });
 			});
 		} else if (options.getSubcommand() === "törlés") {
 			const id = options.getString("id", true);

@@ -11,6 +11,7 @@ import {
 	PermissionOverwrites, 
 	PermissionsBitField, 
 	SlashCommandBuilder, 
+	SlashCommandChannelOption, 
 	SlashCommandNumberOption, 
 	SlashCommandRoleOption, 
 	SlashCommandStringOption, 
@@ -31,8 +32,14 @@ export default {
 		.setDescription("Ticketek létrehozása, szerkesztése, törlése")
 		.addSubcommand(
 			new SlashCommandSubcommandBuilder()
-			.setName("új")
-			.setDescription("Új ticket létrehozása")
+			.setName("új_üzenet")
+			.setDescription("Ticket üzenet létrehozása")
+			.addChannelOption(
+				new SlashCommandChannelOption()
+				.setName("csatorna")
+				.setDescription("🤯")
+				.setRequired(true)
+			)
 		).addSubcommand(
 			new SlashCommandSubcommandBuilder()
 			.setName("törlés")
@@ -87,6 +94,7 @@ export default {
 		
 	async execute(interaction, db) {
 		const options = interaction.options as CommandInteractionOptionResolver;
+		console.debug(`Executing command ticket with subcommand ${options.getSubcommand()}`);
 		const ticket_settings = await db.hGetAll(`ticket:${interaction.guildId}`);
 		if (options.getSubcommand() === "új") {
 			await interaction.showModal(
@@ -104,7 +112,7 @@ export default {
 					)
 				)
 			);
-
+			
 			const modal_response = await interaction.awaitModalSubmit({
 				time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
 

@@ -6,5 +6,7 @@
 - Sorsolás ✅
 - Káromkodás szűrés (már van discordban) ❌
 - Ticket rendszer (pl hibabejelentések, stb) ✅
+		- lezárás csak adminoknak
 - XP rendszer (voice-on töltött idő és üzenet küldés mennyisége alapján) ✅
+		- nullázás
 - HA lehetséges akkor youtube lejátszás ⏸
