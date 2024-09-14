@@ -6,7 +6,8 @@
 - Sorsolás ✅
 - Káromkodás szűrés (már van discordban) ❌
 - Ticket rendszer (pl hibabejelentések, stb) ✅
-		- lezárás csak adminoknak
+		- lezárás csak adminoknak ✅
+		- ticket létrehozása gombbal nem üzenettel ✅
 - XP rendszer (voice-on töltött idő és üzenet küldés mennyisége alapján) ✅
-		- nullázás
+		- nullázás ✅
 - HA lehetséges akkor youtube lejátszás ⏸
