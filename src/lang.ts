@@ -46,6 +46,10 @@ export default {
     roleselect_removed: "🗑 Rang választó törölve",
 
     ticket_new_modal_title: "Új ticket létrehozása",
+    ticket_new_msg_modal_title: "Ticket üzenet létrehozása",
+    ticket_new_modal_btn_emoji: "Gomb emoji",
+    ticket_new_modal_btn_text: "Gomb felirat",
+    ticket_msg_created: "Ticket üzenet létrehozva",
     ticket_new_modal_text: "Üzenet",
     ticket_new_channel_create_failed: "❌ Hiba történt a csatorna létrehozása közben",
     ticket_created: "Ticket létrehozva, a továbbiakat ebben a csatornában látod: {1}",

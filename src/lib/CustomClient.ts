@@ -1,5 +1,5 @@
 import type { RedisClientType } from "@redis/client";
-import { Client, Collection, EmbedBuilder, Events, PermissionFlagsBits, TextChannel, type ClientOptions, type GuildTextBasedChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, Collection, EmbedBuilder, Events, ModalBuilder, PermissionFlagsBits, TextChannel, TextInputBuilder, TextInputStyle, type ClientOptions, type GuildTextBasedChannel, type MessageActionRowComponentBuilder, type ModalActionRowComponentBuilder } from "discord.js";
 import type { Command } from "./Command";
 import { Glob } from "bun";
 import lang from "../lang";
@@ -47,8 +47,12 @@ export class CustomClient extends Client {
 
 				} else if (interaction.customId.startsWith("ticket-close-")) {
 					const ticket_admin_role = await this.db.hGet(`ticket:${interaction.guildId}`, "role");
-					if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator) && 
-					!interaction.member?.roles.cache.has(ticket_admin_role)) {
+					try {
+						if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator) && 
+						!interaction.member?.roles.cache.has(ticket_admin_role)) {
+							throw new Error("No rights");
+						}
+					} catch {
 						await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
 						return;
 					}
@@ -67,6 +71,58 @@ export class CustomClient extends Client {
 					await this.db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, "status", "ticket_status_closed");
 					await channel.send({content: lang.ticket_status_changed.replace("{1}", lang.ticket_statuses.ticket_status_closed)});
 					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.ticket_closed)], ephemeral: true});
+
+				} else if (interaction.customId === "ticket-open") {
+					await interaction.showModal(
+						new ModalBuilder()
+						.setCustomId("ticket-new-modal")
+						.setTitle(lang.ticket_new_modal_title)
+						.addComponents(
+							new ActionRowBuilder<ModalActionRowComponentBuilder>()
+							.addComponents(
+								new TextInputBuilder()
+								.setCustomId("ticket-new-msg")
+								.setLabel(lang.ticket_new_modal_text)
+								.setStyle(TextInputStyle.Paragraph)
+								.setRequired(true)
+							)
+						)
+					);
+					
+					const modal_response = await interaction.awaitModalSubmit({
+						time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
+
+					const ticket_settings = await this.db.hGetAll(`ticket:${interaction.guildId}`);
+					const text = modal_response.fields.getTextInputValue("ticket-new-msg");
+					const ticket_id = Date.now();
+					const channel = await interaction.guild?.channels.create({
+						name: `ticket-${ticket_id}`, 
+						type: ChannelType.GuildText, 
+						parent: ticket_settings.category, 
+						permissionOverwrites: [
+							{id: interaction.guild.roles.everyone, deny: PermissionFlagsBits.ViewChannel},
+							{id: interaction.user.id, allow: PermissionFlagsBits.ViewChannel},
+							{id: ticket_settings.role, allow: PermissionFlagsBits.ViewChannel}
+						]
+					});
+					if (!channel) {
+						modal_response.reply({content: lang.ticket_new_channel_create_failed, ephemeral: true});
+						return;
+					}
+					await channel.send({
+						content: `${text}\n*||ID: ${ticket_id}||*`, 
+						components: [
+						new ActionRowBuilder<MessageActionRowComponentBuilder>()
+						.addComponents(
+							new ButtonBuilder()
+							.setStyle(ButtonStyle.Danger)
+							.setCustomId(`ticket-close-${ticket_id}`)
+							.setLabel(lang.ticket_close)
+						)
+					]});
+					await this.db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, {user:interaction.user.id, channel: channel.id, status: "ticket_status_open"});
+					
+					await modal_response.reply({content: lang.ticket_created.replace("{1}", `<#${channel.id}>`), ephemeral: true});
 				}
 			}
 		});
