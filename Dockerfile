@@ -1,9 +1,6 @@
-FROM alpine:latest
+FROM oven/bun:latest
 
 WORKDIR /app
-
-RUN apk add --no-cache curl bash
-RUN curl -fsSL https://bun.sh/install | bash
 
 COPY package.json .
 RUN bun install
