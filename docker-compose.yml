@@ -1,0 +1,15 @@
+services:
+  db:
+    image: redis:alpine
+    command: redis-server --save 300 1 --loglevel warning
+    volumes:
+      - ./data:/data
+  bot:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - REDIS_URL=redis://db:6379
+      - REGISTER_COMMANDS_AT_STARTUP=1
+      - GUILD_ID=YOUR_GUILD_ID
+      - DISCORD_TOKEN=YOUR_BOT_TOKEN

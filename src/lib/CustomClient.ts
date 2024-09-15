@@ -90,7 +90,7 @@ export class CustomClient extends Client {
 					);
 					
 					const modal_response = await interaction.awaitModalSubmit({
-						time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
+						time: 5000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
 
 					const ticket_settings = await this.db.hGetAll(`ticket:${interaction.guildId}`);
 					const text = modal_response.fields.getTextInputValue("ticket-new-msg");
@@ -132,7 +132,8 @@ export class CustomClient extends Client {
 			await this.db.hIncrBy(`xp:${message.guildId}`, message.author.id, 5);
 		});
 
-		this.on(Events.Error, (err) => {
+		this.on(Events.Error, (err:any) => {
+			if (err.code && err.code == "InteractionCollectorError") return;
 			console.error(`Unexpected error occured at ${Date.now()}\n`, err);
 		});
 		

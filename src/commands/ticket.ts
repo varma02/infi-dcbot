@@ -109,7 +109,8 @@ export default {
 						new TextInputBuilder()
 						.setCustomId("ticket-new-msg-btn-emoji")
 						.setLabel(lang.ticket_new_modal_btn_emoji)
-						.setStyle(TextInputStyle.Paragraph)
+						.setStyle(TextInputStyle.Short)
+						.setMaxLength(5)
 						.setRequired(true)
 					),
 					new ActionRowBuilder<ModalActionRowComponentBuilder>()
@@ -117,7 +118,8 @@ export default {
 						new TextInputBuilder()
 						.setCustomId("ticket-new-msg-btn-text")
 						.setLabel(lang.ticket_new_modal_btn_text)
-						.setStyle(TextInputStyle.Paragraph)
+						.setStyle(TextInputStyle.Short)
+						.setMaxLength(30)
 						.setRequired(true)
 					),
 					new ActionRowBuilder<ModalActionRowComponentBuilder>()
@@ -132,10 +134,10 @@ export default {
 			);
 			
 			const modal_response = await interaction.awaitModalSubmit({
-				time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
+				time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-msg-modal" && i.user.id == interaction.user.id});
 
 			const channel = options.getChannel("csatorna", true, [ChannelType.GuildText]);
-			const text = modal_response.fields.getTextInputValue("ticket-new-msg");
+			const text = modal_response.fields.getTextInputValue("ticket-new-msg-text");
 			const btnemoji = modal_response.fields.getTextInputValue("ticket-new-msg-btn-emoji");
 			const btntext = modal_response.fields.getTextInputValue("ticket-new-msg-btn-text");
 
@@ -145,7 +147,7 @@ export default {
 					new ActionRowBuilder<MessageActionRowComponentBuilder>()
 					.addComponents(
 						new ButtonBuilder()
-						.setStyle(ButtonStyle.Danger)
+						.setStyle(ButtonStyle.Primary)
 						.setCustomId(`ticket-open`)
 						.setLabel(btntext)
 						.setEmoji(btnemoji)
