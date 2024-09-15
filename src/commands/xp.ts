@@ -4,6 +4,7 @@ import {
 	ButtonStyle,
 	CommandInteractionOptionResolver,
 	ComponentType,
+	PermissionFlagsBits,
 	SlashCommandBuilder, 
 	SlashCommandSubcommandBuilder, 
 	SlashCommandUserOption,
@@ -52,6 +53,12 @@ export default {
 			const xp = await db.hGet(`xp:${interaction.guildId}`, user.id);
 			await interaction.reply(lang.xp_user.replace("{1}", `<@${user.id}>`).replace("{2}", xp || "0"));
 		} else if (options.getSubcommand() === "nullázás") {
+			try {
+				if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator)) throw new Error("No rights");
+			} catch {
+				await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
+				return;
+			}
 			const reply = await interaction.reply({
 				content: lang.xp_reset_confirm,
 				ephemeral: true,
