@@ -213,7 +213,7 @@ export default {
 				}
 			});
 			collector.once("end", () => {
-				if (msg) msg.edit({ components: [] });
+				msg.edit({ components: [] }).catch(() => {});
 			});
 		} else if (options.getSubcommand() === "törlés") {
 			const id = options.getString("id", true);

@@ -182,7 +182,7 @@ export default {
 					}
 				});
 				collector.once('end', () => {
-					if (message) message.edit({ components: [] });
+					message.edit({ components: [] }).catch(() => {});
 				});
 			break;
 			case "lezárás":

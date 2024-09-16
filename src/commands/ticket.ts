@@ -155,37 +155,6 @@ export default {
 				ephemeral: true
 			})
 
-			// const text = modal_response.fields.getTextInputValue("ticket-new-msg");
-			// const ticket_id = Date.now();
-			// const channel = await interaction.guild?.channels.create({
-			// 	name: `ticket-${ticket_id}`, 
-			// 	type: ChannelType.GuildText, 
-			// 	parent: ticket_settings.category, 
-			// 	permissionOverwrites: [
-			// 		{id: interaction.guild.roles.everyone, deny: PermissionFlagsBits.ViewChannel},
-			// 		{id: interaction.user.id, allow: PermissionFlagsBits.ViewChannel},
-			// 		{id: ticket_settings.role, allow: PermissionFlagsBits.ViewChannel}
-			// 	]
-			// });
-			// if (!channel) {
-			// 	modal_response.reply({content: lang.ticket_new_channel_create_failed, ephemeral: true});
-			// 	return;
-			// }
-			// await channel.send({
-			// 	content: `${text}\n*||ID: ${ticket_id}||*`, 
-			// 	components: [
-			// 	new ActionRowBuilder<MessageActionRowComponentBuilder>()
-			// 	.addComponents(
-			// 		new ButtonBuilder()
-			// 		.setStyle(ButtonStyle.Danger)
-			// 		.setCustomId(`ticket-close-${ticket_id}`)
-			// 		.setLabel(lang.ticket_close)
-			// 	)
-			// ]});
-			// await db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, {user:interaction.user.id, channel: channel.id, status: "ticket_status_open"});
-			
-			// await modal_response.reply({content: lang.ticket_created.replace("{1}", `<#${channel.id}>`), ephemeral: true});
-
 
 		} else if (options.getSubcommand() === "törlés") {
 			const ticket_id = options.getString("id", true);

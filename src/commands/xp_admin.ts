@@ -74,7 +74,7 @@ export default {
 				}
 			});
 			collector.once("end", () => {
-				if (reply) reply.edit({ components: [] });
+				reply.edit({ components: [] }).catch(() => {});
 			});
 
 

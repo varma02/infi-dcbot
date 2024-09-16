@@ -66,6 +66,7 @@ export default {
 		const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 1200000 });
 		
 		collector.on('collect', async (i) => {
+			if (!i || !interaction) return;
 			if (i.user.id !== interaction.user.id) return;
 			switch (i.customId) {
 				case "welcome-msg-save":
@@ -89,7 +90,7 @@ export default {
 		});
 
 		collector.once('end', () => {
-			if (message) message.edit({ components: [] });
+			message.edit({ components: [] }).catch(() => {});
 		})
 	}
 } as Command;

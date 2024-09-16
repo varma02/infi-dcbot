@@ -226,7 +226,7 @@ export class CustomClient extends Client {
 			if (guild) {
 				guild.commands.set([...this.commands.values()].map((command) => command.data))
 					.catch((err)=>console.warn(`Failed to register slash commands`, err))
-				console.log("Registering slash commands to guild");
+				console.log("Registering slash commands to guild " + guild.id);
 				return;
 			}
 		} else if (this.application) {
