@@ -75,4 +75,5 @@ export default {
     xp_reset: "XP visszaállítva",
     xp_reset_done: "✅ XP visszaállítva",
     xp_reset_cancel: "❌ Visszaállítás megszakítva",
+    xp_multiplier_set: "XP szorzó(k) beállítva",
 }

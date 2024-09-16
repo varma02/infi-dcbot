@@ -3,14 +3,11 @@ import {
 	ButtonBuilder, 
 	ButtonStyle, 
 	ChannelType, 
-	CommandInteractionOptionResolver, 
-	ComponentType, 
-	Emoji, 
+	CommandInteractionOptionResolver,
 	InteractionCollector, 
 	ModalBuilder, 
 	parseEmoji, 
-	PermissionFlagsBits, 
-	Role, 
+	PermissionFlagsBits,
 	RoleSelectMenuBuilder, 
 	SlashCommandBuilder, 
 	SlashCommandChannelOption, 
@@ -21,7 +18,6 @@ import {
 	type GuildTextBasedChannel, 
 	type MessageActionRowComponentBuilder, 
 	type ModalActionRowComponentBuilder,
-	type PartialEmoji
 } from "discord.js";
 import type { Command } from "../lib/Command";
 import lang from "../lang";

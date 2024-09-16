@@ -1,4 +1,24 @@
-import { ActionRowBuilder, ButtonBuilder, ChannelType, CommandInteractionOptionResolver, type MessageActionRowComponentBuilder, ModalBuilder, SlashCommandBuilder, SlashCommandChannelOption, SlashCommandSubcommandBuilder, TextInputBuilder, TextInputStyle, type ModalActionRowComponentBuilder, ButtonStyle, ComponentType, SlashCommandIntegerOption, type GuildTextBasedChannel, PermissionFlagsBits, InteractionCollector, parseEmoji } from "discord.js";
+import { 
+	ActionRowBuilder,
+	ButtonBuilder,
+	ChannelType,
+	CommandInteractionOptionResolver,
+	type MessageActionRowComponentBuilder,
+	ModalBuilder,
+	SlashCommandBuilder,
+	SlashCommandChannelOption,
+	SlashCommandSubcommandBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	type ModalActionRowComponentBuilder,
+	ButtonStyle,
+	ComponentType,
+	SlashCommandIntegerOption,
+	type GuildTextBasedChannel,
+	PermissionFlagsBits,
+	InteractionCollector,
+	parseEmoji 
+} from "discord.js";
 import type { Command } from "../lib/Command";
 import lang from "../lang";
 

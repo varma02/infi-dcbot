@@ -1,5 +1,22 @@
 import type { RedisClientType } from "@redis/client";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, Collection, EmbedBuilder, Events, ModalBuilder, PermissionFlagsBits, TextChannel, TextInputBuilder, TextInputStyle, type ClientOptions, type GuildTextBasedChannel, type MessageActionRowComponentBuilder, type ModalActionRowComponentBuilder } from "discord.js";
+import { 
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelType,
+	Client,
+	Collection,
+	EmbedBuilder,
+	Events,
+	ModalBuilder,
+	PermissionFlagsBits,
+	TextInputBuilder,
+	TextInputStyle,
+	type ClientOptions,
+	type GuildTextBasedChannel,
+	type MessageActionRowComponentBuilder,
+	type ModalActionRowComponentBuilder 
+} from "discord.js";
 import type { Command } from "./Command";
 import { Glob } from "bun";
 import lang from "../lang";
