@@ -146,7 +146,7 @@ export class CustomClient extends Client {
 
 		this.on(Events.MessageCreate, async (message) => {
 			if (message.author.bot) return;
-			await this.db.hIncrBy(`xp:${message.guildId}`, message.author.id, 5);
+			await this.db.hIncrBy(`xp:${message.guildId}`, message.author.id, parseInt(await this.db.get(`xp_multiplier:${message.guildId}:message`) || "5"));
 		});
 
 		this.on(Events.Error, (err:any) => {
@@ -159,9 +159,10 @@ export class CustomClient extends Client {
 
 				(async ()=> {
 					for (const guild of this.guilds.cache.values()) {
+						const multiplier = parseInt(await this.db.get(`xp_multiplier:${guild.id}:voice`) || "1");
 						for (const voice of guild.voiceStates.cache.values()) {
 							if (voice.channelId && voice.member) {
-								await this.db.hIncrBy(`xp:${guild.id}`, voice.member.id, 1);
+								await this.db.hIncrBy(`xp:${guild.id}`, voice.member.id, multiplier);
 							}
 						}
 					}
