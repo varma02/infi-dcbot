@@ -90,7 +90,7 @@ export class CustomClient extends Client {
 					);
 					
 					const modal_response = await interaction.awaitModalSubmit({
-						time: 5000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
+						time: 1200000, filter: (i) => i.isModalSubmit() && i.customId == "ticket-new-modal" && i.user.id == interaction.user.id});
 
 					const ticket_settings = await this.db.hGetAll(`ticket:${interaction.guildId}`);
 					const text = modal_response.fields.getTextInputValue("ticket-new-msg");
