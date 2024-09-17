@@ -150,7 +150,9 @@ export class CustomClient extends Client {
 		});
 
 		this.on(Events.Error, (err:any) => {
-			if (typeof err == "object" && err.code && err.code == "InteractionCollectorError") return;
+			try {
+				if (err.code == "InteractionCollectorError") return;
+			} catch {}
 			console.error(`Unexpected error occured at ${Date.now()}\n`, err);
 		});
 		
