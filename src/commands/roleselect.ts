@@ -25,6 +25,7 @@ import lang from "../lang";
 function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
 	if (Object.keys(roles).length == 0) return [];
 	const rows = [];
+	let i = 0;
 	let row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
 	for (const [k, v] of Object.entries(roles)) {
 		row.addComponents(
@@ -34,9 +35,11 @@ function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
 			.setLabel(v.label)
 			.setEmoji(v.emoji)
 		);
-		if (row.components.length >= 5) {
+		i++;
+		if (i >= 5) {
 			rows.push(row);
 			row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
+			i = 0;
 		}
 	}
 	return rows;
