@@ -22,6 +22,26 @@ import {
 import type { Command } from "../lib/Command";
 import lang from "../lang";
 
+function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
+	if (Object.keys(roles).length == 0) return [];
+	const rows = [];
+	let row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
+	for (const [k, v] of Object.entries(roles)) {
+		row.addComponents(
+			new ButtonBuilder()
+			.setCustomId(`roleselect-${k}`)
+			.setStyle(ButtonStyle.Secondary)
+			.setLabel(v.label)
+			.setEmoji(v.emoji)
+		);
+		if (row.components.length >= 5) {
+			rows.push(row);
+			row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
+		}
+	}
+	return rows;
+}
+
 export default {
 	data: new SlashCommandBuilder()
 		.setDMPermission(false)
@@ -112,15 +132,7 @@ export default {
 			collector.on("collect", async (i) => {
 				if (i.customId == "roleselect-new-save") {
 					const start_time = Date.now();
-					const msg = await channel.send({ content: `${text}\n*||ID:${start_time}||*`, components: [
-						new ActionRowBuilder<MessageActionRowComponentBuilder>()
-						.addComponents(Object.entries(roles).map(([k, v]) => new ButtonBuilder()
-						.setCustomId(`roleselect-${start_time}:${k}`)
-						.setStyle(ButtonStyle.Secondary)
-						.setLabel(v.label)
-						.setEmoji(v.emoji)
-						))
-					]});
+					const msg = await channel.send({ content: `${text}\n*||ID:${start_time}||*`, components: buildrows(roles) });
 					await db.hSet(`roleselect:${i.guildId}:${start_time}`, {channel: channel.id, message: msg.id, roles: JSON.stringify(Object.keys(roles))});
 					await i.reply({ content: lang.roleselect_new_saved, ephemeral: true });
 					collector.stop();
@@ -133,8 +145,8 @@ export default {
 						delete roles[i.values[0]];
 						i.reply({ content: "❌ Rang törölve", ephemeral: true });
 					} else {
-						if (Object.keys(roles).length >= 5) {
-							await i.reply({ content: "❌ Maximum 5 rang választható", ephemeral: true });
+						if (Object.keys(roles).length >= 15) {
+							await i.reply({ content: "❌ Maximum 15 rang választható", ephemeral: true });
 							return;
 						}
 						await i.showModal(
@@ -171,44 +183,32 @@ export default {
 						roles[i.values[0]] = {label, emoji: emoji};
 						modal_response.reply({ content: "✅ Rang hozzáadva", ephemeral: true });
 					}
-					const row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
-					for (const [k, v] of Object.entries(roles)) {
-						row.addComponents(
-							new ButtonBuilder()
-							.setCustomId(`roleselect-${k}`)
-							.setStyle(ButtonStyle.Secondary)
-							.setLabel(v.label)
-							.setEmoji(v.emoji)
-						);
-					}
-					const components = [
-						new ActionRowBuilder<MessageActionRowComponentBuilder>()
-						.addComponents(
-							new RoleSelectMenuBuilder()
-								.setCustomId("roleselect-new-menu")
-								.setPlaceholder(lang.roleselect_new_select_placeholder)
-								.setMaxValues(1)
-								.setMinValues(0),
-						),
-						new ActionRowBuilder<MessageActionRowComponentBuilder>()
-						.addComponents(
-							new ButtonBuilder()
-								.setCustomId("roleselect-new-save")
-								.setLabel(lang.roleselect_new_send_btn)
-								.setEmoji("💌")
-								.setStyle(ButtonStyle.Primary),
-							new ButtonBuilder()
-								.setCustomId("roleselect-new-discard")
-								.setLabel(lang.roleselect_new_discard_btn)
-								.setEmoji("🗑️")
-								.setStyle(ButtonStyle.Secondary),
-						)
-					];
-					if (Object.keys(roles).length) {
-						components.unshift(row);
-					}
+					
 					msg.edit({
-						components: components,
+						components: [
+							...buildrows(roles),
+							new ActionRowBuilder<MessageActionRowComponentBuilder>()
+							.addComponents(
+								new RoleSelectMenuBuilder()
+									.setCustomId("roleselect-new-menu")
+									.setPlaceholder(lang.roleselect_new_select_placeholder)
+									.setMaxValues(1)
+									.setMinValues(0),
+							),
+							new ActionRowBuilder<MessageActionRowComponentBuilder>()
+							.addComponents(
+								new ButtonBuilder()
+									.setCustomId("roleselect-new-save")
+									.setLabel(lang.roleselect_new_send_btn)
+									.setEmoji("💌")
+									.setStyle(ButtonStyle.Primary),
+								new ButtonBuilder()
+									.setCustomId("roleselect-new-discard")
+									.setLabel(lang.roleselect_new_discard_btn)
+									.setEmoji("🗑️")
+									.setStyle(ButtonStyle.Secondary),
+							)
+						]
 					});
 				}
 			});

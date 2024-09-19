@@ -62,33 +62,6 @@ export class CustomClient extends Client {
 						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(lang.unexpected_error.replace("{1}", err))], ephemeral: true});
 					}
 
-				} else if (interaction.customId.startsWith("ticket-close-")) {
-					const ticket_admin_role = await this.db.hGet(`ticket:${interaction.guildId}`, "role");
-					try {
-						if (!interaction.member?.permissions.has(PermissionFlagsBits.Administrator) && 
-						!interaction.member?.roles.cache.has(ticket_admin_role)) {
-							throw new Error("No rights");
-						}
-					} catch {
-						await interaction.reply({content: lang.ticket_no_rights, ephemeral: true});
-						return;
-					}
-					const ticket_id = interaction.customId.split("-")[2];
-					const ticket = await this.db.hGetAll(`ticket:${interaction.guildId}:${ticket_id}`);
-					if (!ticket || ticket.user !== interaction.user.id) {
-						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(lang.ticket_not_found)], ephemeral: true});
-						return;
-					}
-					const channel = await this.channels.fetch(ticket.channel) as GuildTextBasedChannel;
-					if (!channel) {
-						await this.db.del(`ticket:${interaction.guildId}:${ticket_id}`);
-						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(lang.ticket_not_found)], ephemeral: true});
-						return;
-					}
-					await this.db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, "status", "ticket_status_closed");
-					await channel.send({content: lang.ticket_status_changed.replace("{1}", lang.ticket_statuses.ticket_status_closed)});
-					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.ticket_closed)], ephemeral: true});
-
 				} else if (interaction.customId === "ticket-open") {
 					await interaction.showModal(
 						new ModalBuilder()
@@ -126,17 +99,7 @@ export class CustomClient extends Client {
 						modal_response.reply({content: lang.ticket_new_channel_create_failed, ephemeral: true});
 						return;
 					}
-					await channel.send({
-						content: `${text}\n*||ID: ${ticket_id}||*`, 
-						components: [
-						new ActionRowBuilder<MessageActionRowComponentBuilder>()
-						.addComponents(
-							new ButtonBuilder()
-							.setStyle(ButtonStyle.Danger)
-							.setCustomId(`ticket-close-${ticket_id}`)
-							.setLabel(lang.ticket_close)
-						)
-					]});
+					await channel.send(`**Ticket #${ticket_id}**\n<@${interaction.user.id}> üzenete:\n${text}`);
 					await this.db.hSet(`ticket:${interaction.guildId}:${ticket_id}`, {user:interaction.user.id, channel: channel.id, status: "ticket_status_open"});
 					
 					await modal_response.reply({content: lang.ticket_created.replace("{1}", `<#${channel.id}>`), ephemeral: true});
