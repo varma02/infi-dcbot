@@ -29,6 +29,11 @@ function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
 	let row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
 	rows.push(row);
 	for (const [k, v] of Object.entries(roles)) {
+		if (i == 5) {
+			row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
+			rows.push(row);
+			i = 0;
+		}
 		row.addComponents(
 			new ButtonBuilder()
 			.setCustomId(`roleselect-${k}`)
@@ -37,11 +42,6 @@ function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
 			.setEmoji(v.emoji)
 		);
 		i++;
-		if (i >= 5) {
-			row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
-			rows.push(row);
-			i = 0;
-		}
 	}
 	return rows;
 }
