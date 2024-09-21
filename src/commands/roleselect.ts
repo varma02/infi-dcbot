@@ -27,6 +27,7 @@ function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
 	const rows = [];
 	let i = 0;
 	let row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
+	rows.push(row);
 	for (const [k, v] of Object.entries(roles)) {
 		row.addComponents(
 			new ButtonBuilder()
@@ -37,8 +38,8 @@ function buildrows(roles: {[key: string]: {label:string, emoji:string}}) {
 		);
 		i++;
 		if (i >= 5) {
-			rows.push(row);
 			row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
+			rows.push(row);
 			i = 0;
 		}
 	}
