@@ -43,7 +43,7 @@ export default {
     roleselect_new_role_btn_emoji: "Gomb emoji",
     roleselect_selected: "Mostantól {1} rangod van",
     roleselect_not_found: "❌ Nincs ilyen rang választó",
-    roleselect_removed: "🗑 Rang választó törölve",
+    roleselect_removed: "❌ Már nincs {1} rangod",
 
     ticket_new_modal_title: "Új ticket létrehozása",
     ticket_new_msg_modal_title: "Ticket üzenet létrehozása",

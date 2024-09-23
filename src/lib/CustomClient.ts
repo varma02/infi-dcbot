@@ -55,12 +55,16 @@ export class CustomClient extends Client {
 					if (!this.user || interaction.message.author.id !== this.user.id) return;
 					const roleid = interaction.customId.split("-")[1];
 					try {
-						await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.add(roleid);
-						await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected.replace("{1}", `<@&${roleid}>`))], ephemeral: true});
+						if (typeof interaction.member?.roles == "object" && interaction.member?.roles.cache.has(roleid)) {
+							await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.remove(roleid);
+							await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_removed.replace("{1}", `<@&${roleid}>`))], ephemeral: true});
+						} else {
+							await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.add(roleid);
+							await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected.replace("{1}", `<@&${roleid}>`))], ephemeral: true});
+						}
 					} catch (err:any) {
 						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(lang.unexpected_error.replace("{1}", err))], ephemeral: true});
 					}
-
 				} else if (interaction.customId === "ticket-open") {
 					await interaction.showModal(
 						new ModalBuilder()
