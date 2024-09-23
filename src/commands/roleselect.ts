@@ -63,16 +63,6 @@ export default {
 				.addChannelTypes(ChannelType.GuildText)
 				.setRequired(true)
 			)
-		).addSubcommand(
-			new SlashCommandSubcommandBuilder()
-			.setName("törlés")
-			.setDescription("Meglévő rang választó üzenet törlése")
-			.addStringOption(
-				new SlashCommandStringOption()
-				.setName("id")
-				.setDescription("Az rang választó azonosítója")
-				.setRequired(true)
-			)
 		),
 		
 	async execute(interaction, db) {
@@ -135,9 +125,7 @@ export default {
 			});
 			collector.on("collect", async (i) => {
 				if (i.customId == "roleselect-new-save") {
-					const start_time = Date.now();
-					const msg = await channel.send({ content: `${text}\n*||ID:${start_time}||*`, components: buildrows(roles) });
-					await db.hSet(`roleselect:${i.guildId}:${start_time}`, {channel: channel.id, message: msg.id, roles: JSON.stringify(Object.keys(roles))});
+					await channel.send({ content: text, components: buildrows(roles) });
 					await i.reply({ content: lang.roleselect_new_saved, ephemeral: true });
 					collector.stop();
 				} else if (i.customId == "roleselect-new-discard") {
@@ -219,17 +207,6 @@ export default {
 			collector.once("end", () => {
 				msg.edit({ components: [] }).catch(() => {});
 			});
-		} else if (options.getSubcommand() === "törlés") {
-			const id = options.getString("id", true);
-			const data = await db.hGetAll(`roleselect:${interaction.guildId}:${id}`);
-			if (!data || !data.channel) {
-				await interaction.reply({ content: lang.roleselect_not_found, ephemeral: true });
-				return;
-			}
-			const channel = await interaction.client.channels.fetch(data.channel) as GuildTextBasedChannel;
-			await channel.messages.delete(data.message);
-			await db.del(`roleselect:${interaction.guildId}:${id}`);
-			await interaction.reply({ content: lang.roleselect_removed, ephemeral: true });
 		}
 	}
 } as Command;

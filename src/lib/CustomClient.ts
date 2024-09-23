@@ -52,12 +52,11 @@ export class CustomClient extends Client {
 					await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.enter_sorsolas)], ephemeral: true});
 
 				} else if (interaction.customId.startsWith("roleselect-")) {
-					const split = interaction.customId.split("-")[1].split(":");
-					const roles = await this.db.hGet(`roleselect:${interaction.guildId}:${split[0]}`, "roles")
-					if (!roles || Object.keys(roles).includes(split[1])) return;
+					if (!this.user || interaction.message.author.id !== this.user.id) return;
+					const roleid = interaction.customId.split("-")[1];
 					try {
-						await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.add(split[1]);
-						await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected.replace("{1}", `<@&${split[1]}>`))], ephemeral: true});
+						await (await interaction.guild?.members.fetch(interaction.user.id))?.roles.add(roleid);
+						await interaction.reply({embeds: [new EmbedBuilder().setColor("Blue").setDescription(lang.roleselect_selected.replace("{1}", `<@&${roleid}>`))], ephemeral: true});
 					} catch (err:any) {
 						await interaction.reply({embeds: [new EmbedBuilder().setColor("Red").setDescription(lang.unexpected_error.replace("{1}", err))], ephemeral: true});
 					}
